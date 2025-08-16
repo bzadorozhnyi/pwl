@@ -7,13 +7,16 @@ COPY --from=ghcr.io/astral-sh/uv:0.8.10 /uv /uvx /bin/
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV PYTHONPATH="/app/src"
 
 # Create and set the working directory
 WORKDIR /app
 
+# Copy dependency files
+COPY pyproject.toml /app/
+COPY uv.lock /app/
+
 # Copy the FastAPI application code into the container
-COPY . /app/
+COPY src /app/src/
 
 # Install dependencies
 RUN uv sync --locked --no-dev

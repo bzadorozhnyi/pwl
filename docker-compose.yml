@@ -20,7 +20,7 @@ services:
     environment:
       - DB_HOST=db
     volumes:
-      - .:/app
+      - ./src:/app/src
     ports:
       - 8000:8000
     depends_on:
