@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 
 from core.jwt import AuthJWTService, get_auth_jwt_service
-from models.user import UserDB
+from models.user import User
 from repositories.user import UserRepository, get_user_repository
 from schemas.user import UserIn, UserOut
 
@@ -24,7 +24,7 @@ class UserService:
 
         hashed_password = self.auth_jwt_service.get_password_hash(user_in.password)
 
-        user_db = UserDB(
+        user_db = User(
             email=user_in.email,
             full_name=user_in.full_name,
             password=hashed_password,

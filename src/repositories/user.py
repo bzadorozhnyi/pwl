@@ -5,20 +5,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from core.db import get_session
-from models.user import UserDB
+from models.user import User
 
 
 class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_email(self, email: str) -> UserDB | None:
-        statement = select(UserDB).where(UserDB.email == email)
+    async def get_by_email(self, email: str) -> User | None:
+        statement = select(User).where(User.email == email)
         result = await self.session.execute(statement)
 
         return result.scalars().one_or_none()
 
-    async def create(self, user: UserDB) -> UserDB:
+    async def create(self, user: User) -> User:
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
