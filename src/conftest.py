@@ -16,6 +16,11 @@ engine = create_async_engine(settings.test_db_url, echo=True)
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
+@pytest.fixture(scope="session")
+def anyio_backend():
+    return "asyncio"
+
+
 @pytest.fixture(scope="module")
 async def setup_db():
     async with engine.begin() as conn:
