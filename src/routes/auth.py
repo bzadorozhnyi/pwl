@@ -10,7 +10,13 @@ from services.user import UserService, get_user_service
 router = APIRouter(tags=[RouterTags.AUTH])
 
 
-@router.post("/register/")
+@router.post(
+    "/register/",
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        400: {"description": "Email already registered"},
+    },
+)
 async def register_user(
     user_in: UserIn, service: Annotated[UserService, Depends(get_user_service)]
 ):
