@@ -1,6 +1,7 @@
 import asyncio
 import importlib
 import inspect
+import os
 import pkgutil
 from logging.config import fileConfig
 
@@ -9,8 +10,8 @@ from sqlalchemy import Connection, pool
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlmodel import SQLModel
 
-from core.config import settings
 import models
+from core.config import settings
 
 
 # This function dynamically imports all SQLModel table classes from the specified package.
@@ -37,6 +38,10 @@ import_models_from_package(models)
 # access to the values within the .ini file in use.
 config = context.config
 
+# set used db url
+db_url = os.getenv("DB_URL", settings.db_url)
+config.set_main_option("sqlalchemy.url", db_url)
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -55,8 +60,12 @@ target_metadata = SQLModel.metadata
 # ... etc.
 
 
+def get_url() -> str:
+    return config.get_main_option("sqlalchemy.url")
+
+
 def run_migrations_offline() -> None:
-    url = settings.db_url.replace("+asyncpg", "")
+    url = get_url()
     context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
     with context.begin_transaction():
         context.run_migrations()
@@ -69,9 +78,8 @@ def do_run_migrations(connection: Connection):
 
 
 async def run_migrations_online() -> None:
-    connectable: AsyncEngine = create_async_engine(
-        settings.db_url, poolclass=pool.NullPool
-    )
+    url = get_url()
+    connectable: AsyncEngine = create_async_engine(url, poolclass=pool.NullPool)
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()
