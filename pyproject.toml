@@ -26,6 +26,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 ignore = ["E731"]
+extend-select = ["I"]
 
 [tool.ruff.format]
 quote-style = "double"

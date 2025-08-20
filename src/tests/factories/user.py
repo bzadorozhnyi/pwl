@@ -3,9 +3,8 @@ from datetime import datetime
 import factory
 import pytest
 
-from models.user import User, UserRole
-
 from core.jwt import AuthJWTService
+from models.user import User, UserRole
 
 
 @pytest.fixture
