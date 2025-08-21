@@ -16,6 +16,6 @@ class UserOut(SQLModel):
     full_name: Annotated[str, Field(max_length=255)]
 
 
-class UserAuthCredentials(BaseModel):
+class UserAuthCredentialsIn(BaseModel):
     email: EmailStr
     password: Annotated[str, Field(min_length=8, max_length=128)]
