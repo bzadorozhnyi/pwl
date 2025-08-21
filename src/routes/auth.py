@@ -6,7 +6,7 @@ from fastapi.params import Depends
 from core.jwt import AuthJWTService, get_auth_jwt_service
 from enums.tags import RouterTags
 from schemas.token import TokenAccessOut, TokenPairOut, TokenRefreshIn
-from schemas.user import UserIn, UserLoginCredentials
+from schemas.user import UserAuthCredentials, UserIn
 from services.user import UserService, get_user_service
 
 router = APIRouter(tags=[RouterTags.AUTH])
@@ -28,7 +28,7 @@ async def register_user(
 
 @router.post("/token/", response_model=TokenPairOut)
 async def login(
-    user_credentials: UserLoginCredentials,
+    user_credentials: UserAuthCredentials,
     user_service: Annotated[UserService, Depends(get_user_service)],
     auth_jwt_service: Annotated[AuthJWTService, Depends(get_auth_jwt_service)],
 ):
