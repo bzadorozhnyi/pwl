@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from core.jwt import AuthJWTService, get_auth_jwt_service
 from models.user import User
 from repositories.user import UserRepository, get_user_repository
-from schemas.user import UserIn, UserOut
+from schemas.user import UserIn, UserLoginCredentials, UserOut
 
 
 class UserService:
@@ -33,6 +33,20 @@ class UserService:
         result = await self.user_repository.create(user_db)
 
         return UserOut.model_validate(result)
+
+    async def authenticate_user(
+        self, user_credentials: UserLoginCredentials
+    ) -> UserOut | None:
+        user = await self.user_repository.get_by_email(user_credentials.email)
+        if not user:
+            return None
+
+        if not self.auth_jwt_service.verify_password(
+            user_credentials.password, user.password
+        ):
+            return None
+
+        return UserOut.model_validate(user)
 
 
 def get_user_service(

@@ -9,6 +9,7 @@ from models.user import User, UserRole
 async def test_user_register_success(
     async_client, db_session, user_create_payload_factory
 ):
+    """Test that user can register successfully."""
     payload = user_create_payload_factory()
     response = await async_client.post(
         "/register/",
@@ -30,6 +31,7 @@ async def test_cannot_register_user_with_missing_fields(
     async_client,
     user_create_payload_factory,
 ):
+    """Test that user cannot register with missing fields."""
     payload = user_create_payload_factory()
     payload.pop("full_name")
     payload.pop("password")
@@ -48,6 +50,7 @@ async def test_cannot_create_user_with_existing_email(
     user_factory,
     user_create_payload_factory,
 ):
+    """Test that user cannot create with existing email."""
     existing_user = user_factory()
     payload = user_create_payload_factory(email=existing_user.email)
 

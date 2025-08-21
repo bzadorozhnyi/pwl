@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from pydantic import EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
 from sqlmodel import SQLModel
 
 
@@ -14,3 +14,8 @@ class UserOut(SQLModel):
     id: int
     email: EmailStr
     full_name: Annotated[str, Field(max_length=255)]
+
+
+class UserLoginCredentials(BaseModel):
+    email: EmailStr
+    password: Annotated[str, Field(min_length=8, max_length=128)]
