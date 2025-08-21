@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from sqlmodel import SQLModel, Field
+from sqlmodel import Field, SQLModel
 
 
 class UserRole(StrEnum):
@@ -9,7 +9,7 @@ class UserRole(StrEnum):
     USER = "user"
 
 
-class UserDB(SQLModel, table=True):
+class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     email: str = Field(index=True, unique=True, nullable=False)
     full_name: str = Field(nullable=False)
