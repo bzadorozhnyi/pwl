@@ -14,9 +14,8 @@ class UserRepository:
 
     async def get_by_email(self, email: str) -> User | None:
         statement = select(User).where(User.email == email)
-        result = await self.session.execute(statement)
 
-        return result.scalars().one_or_none()
+        return await self.session.scalar(statement)
 
     async def create(self, user: User) -> User:
         self.session.add(user)

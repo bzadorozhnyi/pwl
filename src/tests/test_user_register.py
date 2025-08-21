@@ -17,10 +17,7 @@ async def test_user_register_success(
 
     assert response.status_code == status.HTTP_201_CREATED
 
-    result = await db_session.execute(
-        select(User).where(User.email == payload["email"])
-    )
-    user = result.scalar_one_or_none()
+    user = await db_session.scalar(select(User).where(User.email == payload["email"]))
 
     assert user is not None
     assert user.email == payload["email"]
