@@ -60,5 +60,5 @@ class UserService:
 def get_user_service(
     user_repository: Annotated[UserRepository, Depends(get_user_repository)],
     auth_jwt_service: Annotated[AuthJWTService, Depends(get_auth_jwt_service)],
-):
+) -> UserService:
     return UserService(user_repository, auth_jwt_service)

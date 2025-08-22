@@ -16,26 +16,30 @@ class AuthJWTService:
     def get_password_hash(self, password: str) -> str:
         return pwd_context.hash(password)
 
-    def _create_token(self, data: dict, expires_delta: timedelta):
+    def _create_token(self, data: dict, expires_delta: timedelta) -> str:
         to_encode = data.copy()
         expire = datetime.now(tz=timezone.utc) + expires_delta
         to_encode.update({"exp": expire})
 
         return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-    def create_access_token(self, data: dict, expires_delta: timedelta | None = None):
+    def create_access_token(
+        self, data: dict, expires_delta: timedelta | None = None
+    ) -> str:
         if not expires_delta:
             expires_delta = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
         return self._create_token(data, expires_delta)
 
-    def create_refresh_token(self, data: dict, expires_delta: timedelta | None = None):
+    def create_refresh_token(
+        self, data: dict, expires_delta: timedelta | None = None
+    ) -> str:
         if not expires_delta:
             expires_delta = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
         return self._create_token(data, expires_delta)
 
-    def create_token_pair(self, data: dict):
+    def create_token_pair(self, data: dict) -> TokenPairOut:
         access_token = self.create_access_token(data)
         refresh_token = self.create_refresh_token(data)
 
