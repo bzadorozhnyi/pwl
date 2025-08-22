@@ -18,6 +18,7 @@ class UserService:
         self.auth_jwt_service = auth_jwt_service
 
     async def register(self, user_in: UserIn) -> UserOut:
+        logger.info("start user registration")
         if await self.user_repository.get_by_email(user_in.email):
             logger.warning("attempt to register already existing email")
             raise HTTPException(
@@ -39,6 +40,7 @@ class UserService:
         return UserOut.model_validate(result)
 
     async def login(self, user_credentials: UserAuthCredentialsIn) -> TokenPairOut:
+        logger.info("start user login")
         user = await self.authenticate_user(user_credentials)
         if not user:
             raise Exception("Invalid auth credentials")
