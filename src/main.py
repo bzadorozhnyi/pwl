@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from core.middlewares.log_requests import log_requests
+from core.middlewares.request_id import RequestIDMiddleware
 from routes import auth
 
 app = FastAPI()
@@ -8,4 +8,4 @@ app = FastAPI()
 app.include_router(auth.router)
 
 
-app.middleware("http")(log_requests)
+app.add_middleware(RequestIDMiddleware)
