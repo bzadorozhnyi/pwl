@@ -38,7 +38,7 @@ class UserService:
     async def login(self, user_credentials: UserAuthCredentialsIn) -> TokenPairOut:
         user = await self.authenticate_user(user_credentials)
         if not user:
-            return Exception("Invalid auth credentials")
+            raise Exception("Invalid auth credentials")
 
         return self.auth_jwt_service.create_token_pair({"sub": user.id})
 

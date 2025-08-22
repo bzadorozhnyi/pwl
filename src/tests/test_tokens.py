@@ -36,6 +36,26 @@ async def test_user_login_success(async_client, user_factory):
 
 
 @pytest.mark.anyio
+async def test_cannot_login_with_invalid_email(async_client):
+    """Test that user cannot login with invalid email."""
+    payload = {"email": "invalid@example.com", "password": "password"}
+    response = await async_client.post("/token/", json=payload)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.anyio
+async def test_cannot_login_with_invalid_password(async_client, user_factory):
+    """Test that user cannot login with invalid password."""
+    user = user_factory(password="password")
+
+    payload = {"email": user.email, "password": "invalid_password"}
+    response = await async_client.post("/token/", json=payload)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.anyio
 async def test_user_cannot_login_with_missing_password(async_client, user_factory):
     """Test that user cannot login with missing password."""
     user = user_factory(password="password")
