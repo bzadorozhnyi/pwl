@@ -11,7 +11,7 @@ def setup_logger():
         "<level>{message}</level> | {extra}"
     )
     loguru_logger.remove()
-    loguru_logger.add(sys.stderr, format=logger_format, level="TRACE")
+    loguru_logger.add(sys.stderr, format=logger_format, level="TRACE", enqueue=True)
     loguru_logger.debug("starting application...")
 
     return loguru_logger
