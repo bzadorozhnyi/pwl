@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 
 from core.jwt import AuthJWTService, get_auth_jwt_service
+from core.logging import logger
 from models.user import User
 from repositories.user import UserRepository, get_user_repository
 from schemas.token import TokenPairOut
@@ -18,6 +19,7 @@ class UserService:
 
     async def register(self, user_in: UserIn) -> UserOut:
         if await self.user_repository.get_by_email(user_in.email):
+            logger.warning("attempt to register already existing email")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered",
@@ -32,6 +34,7 @@ class UserService:
         )
 
         result = await self.user_repository.create(user_db)
+        logger.info("user successfully created")
 
         return UserOut.model_validate(result)
 
@@ -47,11 +50,13 @@ class UserService:
     ) -> UserOut | None:
         user = await self.user_repository.get_by_email(user_credentials.email)
         if not user:
+            logger.warning("email not found")
             return None
 
         if not self.auth_jwt_service.verify_password(
             user_credentials.password, user.password
         ):
+            logger.warning("invalid password")
             return None
 
         return UserOut.model_validate(user)
