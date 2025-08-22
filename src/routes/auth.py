@@ -23,6 +23,7 @@ async def register_user(
     user_in: UserIn, service: Annotated[UserService, Depends(get_user_service)]
 ):
     await service.register(user_in)
+
     return Response(status_code=status.HTTP_201_CREATED)
 
 
