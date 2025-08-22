@@ -17,6 +17,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "factory-boy>=3.3.3",
+    "jsonschema>=4.25.1",
     "pytest>=8.4.1",
     "ruff>=0.12.8",
 ]
