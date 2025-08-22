@@ -5,6 +5,7 @@ from fastapi import Depends, HTTPException, status
 from core.jwt import AuthJWTService, get_auth_jwt_service
 from models.user import User
 from repositories.user import UserRepository, get_user_repository
+from schemas.token import TokenPairOut
 from schemas.user import UserAuthCredentialsIn, UserIn, UserOut
 
 
@@ -33,6 +34,13 @@ class UserService:
         result = await self.user_repository.create(user_db)
 
         return UserOut.model_validate(result)
+
+    async def login(self, user_credentials: UserAuthCredentialsIn) -> TokenPairOut:
+        user = await self.authenticate_user(user_credentials)
+        if not user:
+            return Exception("Invalid auth credentials")
+
+        return self.auth_jwt_service.create_token_pair({"sub": user.id})
 
     async def authenticate_user(
         self, user_credentials: UserAuthCredentialsIn

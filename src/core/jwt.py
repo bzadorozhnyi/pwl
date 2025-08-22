@@ -4,7 +4,7 @@ import jwt
 from passlib.context import CryptContext
 
 from core.config import settings
-from schemas.token import TokenPairOut
+from schemas.token import TokenAccessOut, TokenPairOut
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -66,6 +66,16 @@ class AuthJWTService:
             raise ValueError("Refresh token has expired")
         except jwt.InvalidTokenError:
             raise ValueError("Invalid refresh token")
+
+    def renew_access_token(self, refresh_token: str) -> TokenAccessOut:
+        try:
+            payload = self.decode_refresh_token(refresh_token)
+        except Exception:
+            raise Exception("Invalid refresh token")
+
+        return TokenAccessOut(
+            access_token=self.create_access_token({"sub": payload["sub"]})
+        )
 
 
 def get_auth_jwt_service() -> AuthJWTService:

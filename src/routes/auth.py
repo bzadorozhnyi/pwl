@@ -30,13 +30,11 @@ async def register_user(
 async def login(
     user_credentials: UserAuthCredentialsIn,
     user_service: Annotated[UserService, Depends(get_user_service)],
-    auth_jwt_service: Annotated[AuthJWTService, Depends(get_auth_jwt_service)],
 ):
-    user = await user_service.authenticate_user(user_credentials)
-    if not user:
+    try:
+        return await user_service.login(user_credentials)
+    except Exception:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-
-    return auth_jwt_service.create_token_pair({"sub": user.id})
 
 
 @router.post("/token/refresh/", response_model=TokenAccessOut)
@@ -45,12 +43,8 @@ async def refresh_token(
     auth_jwt_service: Annotated[AuthJWTService, Depends(get_auth_jwt_service)],
 ):
     try:
-        payload = auth_jwt_service.decode_refresh_token(body.refresh_token)
+        return auth_jwt_service.renew_access_token(body.refresh_token)
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
         )
-
-    return TokenAccessOut(
-        access_token=auth_jwt_service.create_access_token({"sub": payload["sub"]})
-    )
