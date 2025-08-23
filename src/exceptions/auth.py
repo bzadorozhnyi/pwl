@@ -1,16 +1,16 @@
 from exceptions.base import AppException
 
 
-class InvalidCredentialError(AppException):
+class InvalidCredentialException(AppException):
     def __init__(self, message: str = "Invalid credentials"):
         super().__init__(message, status_code=401)
 
 
-class EmailAlreadyRegisteredError(AppException):
+class EmailAlreadyRegisteredException(AppException):
     def __init__(self, message: str = "Email already registered"):
         super().__init__(message, status_code=400)
 
 
-class InvalidRefreshTokenError(AppException):
+class InvalidRefreshTokenException(AppException):
     def __init__(self, message: str = "Invalid refresh token"):
         super().__init__(message, status_code=401)
