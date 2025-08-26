@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 
 from core.jwt import AuthJWTService, get_auth_jwt_service
 from core.logging import logger
+from exceptions import AuthorizationException, InputException
 from models.user import User
 from repositories.user import UserRepository, get_user_repository
 from schemas.token import TokenPairOut
@@ -21,10 +22,7 @@ class UserService:
         logger.info("start user registration")
         if await self.user_repository.get_by_email(user_in.email):
             logger.warning("attempt to register already existing email")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered",
-            )
+            raise InputException("Email already registered")
 
         hashed_password = self.auth_jwt_service.get_password_hash(user_in.password)
 
@@ -43,7 +41,7 @@ class UserService:
         logger.info("start user login")
         user = await self.authenticate_user(user_credentials)
         if not user:
-            raise Exception("Invalid auth credentials")
+            raise AuthorizationException("Invalid email or password")
 
         return self.auth_jwt_service.create_token_pair({"sub": user.id})
 
