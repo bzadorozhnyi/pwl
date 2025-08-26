@@ -59,4 +59,4 @@ async def test_cannot_create_user_with_existing_email(
         json=payload,
     )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
