@@ -4,12 +4,11 @@ from fastapi import APIRouter, status
 from fastapi.params import Depends
 
 from core.jwt import AuthJWTService, get_auth_jwt_service
-from enums.tags import RouterTags
 from schemas.token import TokenAccessOut, TokenPairOut, TokenRefreshIn
 from schemas.user import UserAuthCredentialsIn, UserIn, UserRegisterOut
 from services.user import UserService, get_user_service
 
-router = APIRouter(prefix="/auth", tags=[RouterTags.AUTH])
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post(
