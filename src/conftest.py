@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 from core.config import settings
 from core.consts import ALEMBIC_CFG_PATH
-from core.db import get_session
+from core.db import AsyncSessionProxy, get_session
 from helpers.db import create_db, drop_db, is_db_exist
 from main import app
 
@@ -62,7 +62,7 @@ async def db_session(async_engine, async_session):
 @pytest.fixture(scope="function")
 async def async_client(db_session):
     async def override_get_session():
-        yield db_session
+        yield AsyncSessionProxy(db_session)
 
     app.dependency_overrides[get_session] = override_get_session
 
