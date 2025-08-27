@@ -24,11 +24,11 @@ class UserOut(SQLModel):
     updated_at: datetime
 
 
-class UserRegisterOut(SQLModel):
+class UserWithTokensOut(SQLModel):
     user: UserOut
     tokens: TokenPairOut
 
 
 class UserAuthCredentialsIn(BaseModel):
-    email: EmailStr
+    identifier: str
     password: Annotated[str, Field(min_length=8, max_length=128)]

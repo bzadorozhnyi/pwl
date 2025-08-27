@@ -12,7 +12,12 @@ from models.user import User
 from repositories.family import FamilyRepository, get_family_repository
 from repositories.user import UserRepository, get_user_repository
 from schemas.token import TokenPairOut
-from schemas.user import UserAuthCredentialsIn, UserIn, UserOut, UserRegisterOut
+from schemas.user import (
+    UserAuthCredentialsIn,
+    UserIn,
+    UserOut,
+    UserWithTokensOut,
+)
 
 
 class UserService:
@@ -28,9 +33,11 @@ class UserService:
         self.family_repository = family_repository
         self.auth_jwt_service = auth_jwt_service
 
-    async def register(self, user_in: UserIn) -> UserRegisterOut:
+    async def register(self, user_in: UserIn) -> UserWithTokensOut:
         logger.info("start user registration")
-        if await self.user_repository.get_by_email(user_in.email):
+        if await self.user_repository.get_by_identifier(
+            user_in.email, allow_username=False
+        ):
             logger.warning("attempt to register already existing email")
             raise InputException("Email already registered")
 
@@ -50,7 +57,7 @@ class UserService:
 
         tokens = self.auth_jwt_service.create_token_pair({"sub": str(user.id)})
 
-        return UserRegisterOut(user=UserOut.model_validate(user), tokens=tokens)
+        return UserWithTokensOut(user=UserOut.model_validate(user), tokens=tokens)
 
     async def _create_user_and_family(self, user_db: User) -> tuple[User, Family]:
         async with self.session.transaction():
@@ -65,16 +72,18 @@ class UserService:
         logger.info("start user login")
         user = await self.authenticate_user(user_credentials)
         if not user:
-            raise AuthorizationException("Invalid email or password")
+            raise AuthorizationException("Invalid identifier or password")
 
-        return self.auth_jwt_service.create_token_pair({"sub": user.id})
+        tokens = self.auth_jwt_service.create_token_pair({"sub": str(user.id)})
+
+        return UserWithTokensOut(user=UserOut.model_validate(user), tokens=tokens)
 
     async def authenticate_user(
         self, user_credentials: UserAuthCredentialsIn
     ) -> UserOut | None:
-        user = await self.user_repository.get_by_email(user_credentials.email)
+        user = await self.user_repository.get_by_identifier(user_credentials.identifier)
         if not user:
-            logger.warning("email not found")
+            logger.warning("user not found")
             return None
 
         if not self.auth_jwt_service.verify_password(
