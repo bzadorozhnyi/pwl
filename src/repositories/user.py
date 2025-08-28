@@ -12,8 +12,15 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_email(self, email: str) -> User | None:
-        statement = select(User).where(User.email == email)
+    async def get_by_identifier(
+        self, identifier: str, allow_username: bool = True
+    ) -> User | None:
+        if allow_username:
+            statement = select(User).where(
+                (User.email == identifier) | (User.username == identifier)
+            )
+        else:
+            statement = select(User).where(User.email == identifier)
 
         return await self.session.scalar(statement)
 
