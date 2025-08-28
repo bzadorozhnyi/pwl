@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class User(SQLModel, table=True):
@@ -13,3 +13,5 @@ class User(SQLModel, table=True):
     last_name: str = Field(nullable=False)
     created_at: datetime = Field(default_factory=datetime.now, nullable=False)
     updated_at: datetime = Field(default_factory=datetime.now, nullable=False)
+
+    family: "Family" = Relationship(back_populates="users")  # noqa: F821

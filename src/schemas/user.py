@@ -5,6 +5,7 @@ from typing import Annotated
 from pydantic import BaseModel, EmailStr, Field
 from sqlmodel import SQLModel
 
+from models.family import FamilyRole
 from schemas.token import TokenPairOut
 
 
@@ -32,3 +33,12 @@ class UserWithTokensOut(SQLModel):
 class UserAuthCredentialsIn(BaseModel):
     identifier: str
     password: Annotated[str, Field(min_length=8, max_length=128)]
+
+
+class UserProfileOut(SQLModel):
+    id: uuid.UUID
+    email: EmailStr
+    username: str
+    first_name: Annotated[str, Field(max_length=100)]
+    last_name: Annotated[str, Field(max_length=100)]
+    role: FamilyRole
