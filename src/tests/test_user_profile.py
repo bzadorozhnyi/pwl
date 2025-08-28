@@ -52,7 +52,7 @@ async def test_retrieve_user_profile_success(
 @pytest.mark.anyio
 async def test_cannot_retrieve_user_profile_unauthorized(async_client):
     response = await async_client.get("/api/users/profile/")
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.anyio
