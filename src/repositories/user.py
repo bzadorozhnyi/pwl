@@ -1,3 +1,4 @@
+import uuid
 from typing import Annotated
 
 from fastapi import Depends
@@ -21,6 +22,11 @@ class UserRepository:
             )
         else:
             statement = select(User).where(User.email == identifier)
+
+        return await self.session.scalar(statement)
+
+    async def get_by_id(self, id: uuid.UUID) -> User | None:
+        statement = select(User).where(User.id == id)
 
         return await self.session.scalar(statement)
 

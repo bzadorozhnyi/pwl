@@ -2,11 +2,12 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from core.db import get_session
 from core.jwt import AuthJWTService, get_auth_jwt_service
 from core.logging import logger
-from exceptions import AuthorizationException, InputException
+from exceptions import AuthorizationException, InputException, NotFoundException
 from models.family import Family, FamilyRole
 from models.user import User
 from repositories.family import FamilyRepository, get_family_repository
@@ -16,6 +17,7 @@ from schemas.user import (
     UserAuthCredentialsIn,
     UserIn,
     UserOut,
+    UserProfileOut,
     UserWithTokensOut,
 )
 
@@ -93,6 +95,46 @@ class UserService:
             return None
 
         return UserOut.model_validate(user)
+
+    async def get_user_from_token(self, token: str) -> User:
+        credentials_exception = AuthorizationException(
+            "Could not validate credentials", headers={"WWW-Authenticate": "Bearer"}
+        )
+
+        try:
+            payload = self.auth_jwt_service.decode_token(token)
+        except Exception:
+            raise credentials_exception
+        user_id = payload.get("sub")
+        user = await self.user_repository.get_by_id(user_id)
+
+        if user is None:
+            raise credentials_exception
+
+        return user
+
+    async def get_profile(self, user: User) -> UserProfileOut:
+        statement = (
+            select(User, Family.role)
+            .join(Family, Family.user_id == User.id)
+            .where(User.id == user.id)
+        )
+
+        result = await self.session.execute(statement)
+        row = result.first()
+
+        if not row:
+            raise NotFoundException("User profile not found. User or family not found.")
+
+        user, role = row
+        return UserProfileOut(
+            id=user.id,
+            email=user.email,
+            username=user.username,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            role=role,
+        )
 
 
 def get_user_service(

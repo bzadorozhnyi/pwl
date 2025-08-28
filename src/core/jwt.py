@@ -49,7 +49,7 @@ class AuthJWTService:
             refresh_token=refresh_token,
         )
 
-    def decode_refresh_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> dict:
         try:
             payload = jwt.decode(
                 token,
@@ -68,13 +68,13 @@ class AuthJWTService:
             )
             return payload
         except jwt.ExpiredSignatureError:
-            raise ValueError("Refresh token has expired")
+            raise ValueError("JWT token has expired")
         except jwt.InvalidTokenError:
-            raise ValueError("Invalid refresh token")
+            raise ValueError("Invalid JWT token")
 
     def renew_access_token(self, refresh_token: str) -> TokenAccessOut:
         try:
-            payload = self.decode_refresh_token(refresh_token)
+            payload = self.decode_token(refresh_token)
         except Exception:
             raise AuthorizationException("Invalid refresh token")
 
