@@ -21,6 +21,7 @@ user_profile_schema = {
 async def test_retrieve_user_profile_success(
     async_client, user_factory, family_factory
 ):
+    """Test user profile retrieval."""
     user = user_factory(password="password")
     family_factory(user_id=user.id)
 
@@ -50,6 +51,7 @@ async def test_retrieve_user_profile_success(
 
 @pytest.mark.anyio
 async def test_cannot_retrieve_user_profile_unauthorized(async_client):
+    """Test that cannot retrieve user profile without authorization."""
     response = await async_client.get("/api/users/profile/")
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -68,6 +70,7 @@ async def test_cannot_retrieve_user_profile_with_invalid_token(async_client):
 
 @pytest.mark.anyio
 async def test_cannot_retrieve_user_profile_with_no_family(async_client, user_factory):
+    """Test that cannot retrieve user profile if user is not in a family."""
     user = user_factory(password="password")
 
     payload = {"identifier": user.email, "password": "password"}
