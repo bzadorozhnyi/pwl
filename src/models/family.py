@@ -15,4 +15,3 @@ class Family(SQLModel, table=True):
     role: FamilyRole = Field(default=FamilyRole.MEMBER, nullable=False)
 
     users: list["User"] = Relationship(back_populates="family")  # noqa: F821
-
