@@ -55,6 +55,18 @@ async def test_cannot_retrieve_user_profile_unauthorized(async_client):
 
 
 @pytest.mark.anyio
+async def test_cannot_retrieve_user_profile_with_invalid_token(async_client):
+    """Test that cannot retrieve user profile with invalid token."""
+    response = await async_client.get(
+        "/api/users/profile/",
+        headers={
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YWRkMTQ5ZC1mMDBjLTQ0ODEtOWZkNi0xNjMyODdlMWE2M2UiLCJleHAiOjE3NTY5OTA2ODl9.XAouQGb_OAiStJA6wIpm8PjNrkleyMlGs73qiJaAQAY"
+        },
+    )  # random jwt token
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.anyio
 async def test_cannot_retrieve_user_profile_with_no_family(async_client, user_factory):
     user = user_factory(password="password")
 
