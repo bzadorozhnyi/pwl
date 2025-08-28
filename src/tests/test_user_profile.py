@@ -19,10 +19,9 @@ user_profile_schema = {
 
 @pytest.mark.anyio
 async def test_retrieve_user_profile_success(
-    async_client, db_session, user_factory, family_factory
+    async_client, user_factory, family_factory
 ):
     user = user_factory(password="password")
-    await db_session.flush()
     family_factory(user_id=user.id)
 
     payload = {"identifier": user.email, "password": "password"}
