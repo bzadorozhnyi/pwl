@@ -1,11 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, BackgroundTasks, Response, status
 from fastapi.params import Depends
 
 from core.jwt import AuthJWTService, get_auth_jwt_service
+from schemas.password_reset import RequestForgotPasswordIn, UpdateForgottenPasswordIn
 from schemas.token import TokenAccessOut, TokenRefreshIn
 from schemas.user import UserAuthCredentialsIn, UserIn, UserWithTokensOut
+from services.password_reset import PasswordResetService, get_password_reset_service
 from services.user import UserService, get_user_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -47,3 +49,37 @@ async def refresh_token(
     auth_jwt_service: Annotated[AuthJWTService, Depends(get_auth_jwt_service)],
 ):
     return auth_jwt_service.renew_access_token(body.refresh_token)
+
+
+@router.post("/forgot-password/", status_code=status.HTTP_204_NO_CONTENT)
+async def forgot_password(
+    body: RequestForgotPasswordIn,
+    password_reset_service: Annotated[
+        PasswordResetService, Depends(get_password_reset_service)
+    ],
+    background_tasks: BackgroundTasks,
+):
+    await password_reset_service.request_forgot_password(body.email, background_tasks)
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/reset-password/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        404: {"description": "The link is not found"},
+        410: {"description": "Password reset link has expired"},
+    },
+)
+async def reset_password(
+    body: UpdateForgottenPasswordIn,
+    password_reset_service: Annotated[
+        PasswordResetService, Depends(get_password_reset_service)
+    ],
+):
+    await password_reset_service.update_forgotten_password(
+        body.token, body.new_password
+    )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
