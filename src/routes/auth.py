@@ -51,7 +51,7 @@ async def refresh_token(
     return auth_jwt_service.renew_access_token(body.refresh_token)
 
 
-@router.post("/forgot-password/")
+@router.post("/forgot-password/", status_code=status.HTTP_204_NO_CONTENT)
 async def forgot_password(
     body: RequestForgotPasswordIn,
     password_reset_service: Annotated[
@@ -63,7 +63,14 @@ async def forgot_password(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.post("/reset-password/")
+@router.post(
+    "/reset-password/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        404: {"description": "The link is not found"},
+        410: {"description": "Password reset link has expired"},
+    },
+)
 async def reset_password(
     body: UpdateForgottenPasswordIn,
     password_reset_service: Annotated[
