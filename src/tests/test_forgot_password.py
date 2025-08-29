@@ -21,7 +21,8 @@ async def test_request_forgot_password_with_unregistered_email(async_client):
 
 @pytest.mark.anyio
 async def test_request_forgot_password_success(
-    async_client, user_factory, db_session, email_service):
+    async_client, user_factory, db_session, email_service
+):
     """Verify that requesting a forgot password for a registered user creates a VerifyToken
     and sends an email."""
 
