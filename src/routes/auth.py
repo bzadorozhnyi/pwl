@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, BackgroundTasks, Response, status
 from fastapi.params import Depends
 
 from core.jwt import AuthJWTService, get_auth_jwt_service
@@ -57,8 +57,9 @@ async def forgot_password(
     password_reset_service: Annotated[
         PasswordResetService, Depends(get_password_reset_service)
     ],
+    background_tasks: BackgroundTasks,
 ):
-    await password_reset_service.request_forgot_password(body.email)
+    await password_reset_service.request_forgot_password(body.email, background_tasks)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
