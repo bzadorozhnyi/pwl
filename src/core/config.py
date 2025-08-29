@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from enums.mail_backend import MailBackend
+
 
 class Settings(BaseSettings):
     DB_NAME: str = "pwl_db"
@@ -11,6 +13,20 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    VERIFY_TOKEN_EXPIRE_HOURS: int = 1
+    UI_URL_PROTOCOL: str = "http://"
+    BASE_UI_DOMAIN: str = "localhost:3000"
+
+    # Email settings
+    MAIL_USERNAME: str = ""
+    MAIL_PASSWORD: str = ""
+    MAIL_FROM: str = "no-reply@example.com"
+    MAIL_PORT: int = 1025
+    MAIL_SERVER: str = "localhost"
+    MAIL_STARTTLS: bool = False
+    MAIL_SSL_TLS: bool = False
+    MAIL_USE_CREDENTIALS: bool = False
+    MAIL_BACKEND: MailBackend = MailBackend.DEV
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

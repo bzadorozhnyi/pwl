@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends
@@ -31,6 +32,15 @@ class UserRepository:
         return await self.session.scalar(statement)
 
     async def create(self, user: User) -> User:
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
+
+    async def update(self, user: User) -> User:
+        user.updated_at = datetime.now()
+
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)

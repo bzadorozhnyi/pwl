@@ -14,6 +14,7 @@ from core.consts import ALEMBIC_CFG_PATH
 from core.db import AsyncSessionProxy, get_session
 from helpers.db import create_db, drop_db, is_db_exist
 from main import app
+from services.email import InMemoryEmailService, get_email_service
 
 
 @pytest.fixture(scope="session")
@@ -60,11 +61,18 @@ async def db_session(async_engine, async_session):
 
 
 @pytest.fixture(scope="function")
-async def async_client(db_session):
+def email_service() -> InMemoryEmailService:
+    return InMemoryEmailService(sender="test@example.com")
+
+
+@pytest.fixture(scope="function")
+async def async_client(db_session, email_service):
     async def override_get_session():
         yield AsyncSessionProxy(db_session)
 
     app.dependency_overrides[get_session] = override_get_session
+
+    app.dependency_overrides[get_email_service] = lambda: email_service
 
     async with AsyncClient(
         transport=ASGITransport(app=app),
