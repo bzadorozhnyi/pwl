@@ -106,17 +106,23 @@ def get_fastmail() -> FastMail:
     return FastMail(conf)
 
 
-def get_email_service_prod() -> EmailService:
+def get_email_service_fastapi_mail() -> EmailService:
     return FastMailEmailService(fm=get_fastmail(), sender=settings.MAIL_FROM)
 
 
-def get_email_service_dev() -> EmailService:
+def get_email_service_console() -> EmailService:
     return ConsoleEmailService(settings.MAIL_FROM)
+
+
+def get_email_service_in_memory() -> EmailService:
+    return InMemoryEmailService(settings.MAIL_FROM)
 
 
 def get_email_service() -> EmailService:
     match settings.MAIL_BACKEND:
-        case MailBackend.DEV:
-            return get_email_service_dev()
-        case MailBackend.PROD:
-            return get_email_service_prod()
+        case MailBackend.CONSOLE:
+            return get_email_service_console()
+        case MailBackend.FASTAPI_MAIL:
+            return get_email_service_fastapi_mail()
+        case MailBackend.IN_MEMORY:
+            return get_email_service_in_memory()

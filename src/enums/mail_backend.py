@@ -2,5 +2,6 @@ from enum import StrEnum
 
 
 class MailBackend(StrEnum):
-    DEV = "dev"
-    PROD = "prod"
+    FASTAPI_MAIL = "fastapi_mail"
+    CONSOLE = "console"
+    IN_MEMORY = "in_memory"

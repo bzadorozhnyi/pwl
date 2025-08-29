@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     MAIL_STARTTLS: bool = False
     MAIL_SSL_TLS: bool = False
     MAIL_USE_CREDENTIALS: bool = False
-    MAIL_BACKEND: MailBackend = MailBackend.DEV
+    MAIL_BACKEND: MailBackend = MailBackend.CONSOLE
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
