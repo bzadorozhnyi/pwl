@@ -40,7 +40,7 @@ jobs:
         run: |
           docker build -t pwl-api:${{ github.sha }} .
 
-      - name: Run Migrations and Tests Inside Docker
+      - name: Run Tests Inside Docker
         run: |
           docker run --rm \
             --network=host \
