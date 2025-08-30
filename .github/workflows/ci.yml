@@ -1,0 +1,48 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]  # Run tests and build when a PR is created
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pwl_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/0.8.11/install.sh | sh
+
+      - name: Run Ruff
+        run: uv run ruff check --output-format=github .
+
+      - name: Build Docker Image
+        id: build-image
+        run: |
+          docker build -t pwl-api:${{ github.sha }} .
+
+      - name: Run Migrations and Tests Inside Docker
+        run: |
+          docker run --rm \
+            --network=host \
+            pwl-api:${{ github.sha }} \
+            sh -c "uv run pytest"
