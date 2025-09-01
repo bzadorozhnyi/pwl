@@ -11,7 +11,14 @@ class FamilyRole(StrEnum):
 
 class Family(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+
+    members: list["FamilyMember"] = Relationship(back_populates="family")
+
+
+class FamilyMember(SQLModel, table=True):
+    family_id: uuid.UUID = Field(foreign_key="family.id", primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", primary_key=True)
     role: FamilyRole = Field(default=FamilyRole.MEMBER, nullable=False)
 
-    users: list["User"] = Relationship(back_populates="family")  # noqa: F821
+    family: Family = Relationship(back_populates="members")
+    user: "User" = Relationship(back_populates="families")  # noqa: F821

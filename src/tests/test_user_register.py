@@ -3,7 +3,7 @@ import pytest
 from fastapi import status
 from sqlmodel import select
 
-from models.family import Family, FamilyRole
+from models.family import FamilyMember, FamilyRole
 from models.user import User
 
 user_register_response_schema = {
@@ -65,10 +65,12 @@ async def test_user_register_success(
     assert user.first_name == payload["first_name"]
     assert user.last_name == payload["last_name"]
 
-    family = await db_session.scalar(select(Family).where(Family.user_id == user.id))
-    assert family is not None
-    assert family.user_id == user.id
-    assert family.role == FamilyRole.ADMIN
+    family_member = await db_session.scalar(
+        select(FamilyMember).where(FamilyMember.user_id == user.id)
+    )
+    assert family_member is not None
+    assert family_member.user_id == user.id
+    assert family_member.role == FamilyRole.ADMIN
 
     _assert_user_register_response_schema(response.json())
 

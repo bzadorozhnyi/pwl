@@ -10,20 +10,32 @@ user_profile_schema = {
         "username": {"type": "string"},
         "first_name": {"type": "string", "maxLength": 100},
         "last_name": {"type": "string", "maxLength": 100},
-        "role": {"type": "string", "enum": ["admin", "member"]},
+        "families": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string", "format": "uuid"},
+                    "role": {"type": "string", "enum": ["admin", "member"]},
+                },
+                "required": ["id", "role"],
+                "additionalProperties": False,
+            },
+        },
     },
-    "required": ["id", "email", "username", "first_name", "last_name", "role"],
+    "required": ["id", "email", "username", "first_name", "last_name", "families"],
     "additionalProperties": False,
 }
 
 
 @pytest.mark.anyio
 async def test_retrieve_user_profile_success(
-    async_client, user_factory, family_factory
+    async_client, user_factory, family_factory, family_member_factory
 ):
     """Test user profile retrieval."""
     user = user_factory(password="password")
-    family_factory(user_id=user.id)
+    family = family_factory()
+    family_member_factory(family_id=family.id, user_id=user.id)
 
     payload = {"identifier": user.email, "password": "password"}
     response = await async_client.post("/api/auth/token/", json=payload)

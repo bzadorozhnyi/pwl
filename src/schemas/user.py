@@ -35,10 +35,15 @@ class UserAuthCredentialsIn(BaseModel):
     password: Annotated[str, Field(min_length=8, max_length=128)]
 
 
+class FamilyInfo(BaseModel):
+    id: uuid.UUID
+    role: FamilyRole
+
+
 class UserProfileOut(SQLModel):
     id: uuid.UUID
     email: EmailStr
     username: str
     first_name: Annotated[str, Field(max_length=100)]
     last_name: Annotated[str, Field(max_length=100)]
-    role: FamilyRole
+    families: list[FamilyInfo]

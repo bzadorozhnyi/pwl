@@ -2,18 +2,20 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from core.db import get_session
 from core.jwt import AuthJWTService, get_auth_jwt_service
 from core.logging import logger
 from exceptions import AuthorizationException, InputException, NotFoundException
-from models.family import Family, FamilyRole
+from models.family import Family, FamilyMember, FamilyRole
 from models.user import User
 from repositories.family import FamilyRepository, get_family_repository
 from repositories.user import UserRepository, get_user_repository
 from schemas.token import TokenPairOut
 from schemas.user import (
+    FamilyInfo,
     UserAuthCredentialsIn,
     UserIn,
     UserOut,
@@ -64,8 +66,9 @@ class UserService:
     async def _create_user_and_family(self, user_db: User) -> tuple[User, Family]:
         async with self.session.transaction():
             user = await self.user_repository.create(user_db)
-            family = await self.family_repository.create(
-                user_id=user.id, role=FamilyRole.ADMIN
+            family = await self.family_repository.create()
+            _family_member = await self.family_repository.add_member(
+                family_id=family.id, user_id=user.id, role=FamilyRole.ADMIN
             )
 
         return user, family
@@ -115,8 +118,8 @@ class UserService:
 
     async def get_profile(self, user: User) -> UserProfileOut:
         statement = (
-            select(User, Family.role)
-            .join(Family, Family.user_id == User.id)
+            select(User)
+            .options(selectinload(User.families).selectinload(FamilyMember.family))
             .where(User.id == user.id)
         )
 
@@ -124,16 +127,24 @@ class UserService:
         row = result.first()
 
         if not row:
-            raise NotFoundException("User profile not found. User or family not found.")
+            raise NotFoundException("User profile not found.")
 
-        user, role = row
+        families = [
+            FamilyInfo(id=member.family.id, role=member.role)
+            for member in user.families
+        ]
+
+        if len(families) == 0:
+            logger.warning("user has no families")
+            raise NotFoundException("User profile not found.")
+
         return UserProfileOut(
             id=user.id,
             email=user.email,
             username=user.username,
             first_name=user.first_name,
             last_name=user.last_name,
-            role=role,
+            families=families,
         )
 
 
