@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from exceptions import InputException
+from exceptions import ForbiddenException
 from models.family_task import FamilyTask
 from repositories.family_task import FamilyTaskRepository, get_family_task_repository
 from schemas.family_task import CreateFamilyTaskIn, FamilyTaskOut
@@ -26,13 +26,13 @@ class FamilyTaskService:
             family_task_data.family_id, creator_id
         )
         if not is_creator_family_member:
-            raise InputException("Creator is not member of family")
+            raise ForbiddenException("Creator is not member of family")
 
         is_assignee_family_member = await self.family_service.is_member(
             family_task_data.family_id, family_task_data.assignee_id
         )
         if not is_assignee_family_member:
-            raise InputException("Assignee is not member of family")
+            raise ForbiddenException("Assignee is not member of family")
 
         family_task = FamilyTask(**family_task_data.model_dump(), creator_id=creator_id)
         family_task = await self.family_task_repository.create(family_task)
