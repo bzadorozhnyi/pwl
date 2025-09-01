@@ -1,0 +1,20 @@
+import uuid
+from typing import Annotated
+
+from fastapi import Depends
+
+from repositories.family import FamilyRepository, get_family_repository
+
+
+class FamilyService:
+    def __init__(self, family_repository: FamilyRepository):
+        self.family_repository = family_repository
+
+    def is_member(self, family_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+        return self.family_repository.is_member(family_id, user_id)
+
+
+def get_family_service(
+    family_repository: Annotated[FamilyRepository, Depends(get_family_repository)],
+) -> FamilyService:
+    return FamilyService(family_repository=family_repository)

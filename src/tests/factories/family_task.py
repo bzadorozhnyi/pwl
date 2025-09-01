@@ -1,0 +1,54 @@
+import uuid
+from datetime import datetime
+
+import factory
+import pytest
+
+from models.family_task import FamilyTask
+
+
+@pytest.fixture
+def family_task_factory(
+    db_session, family_factory, family_member_factory, user_factory
+):
+    class FamilyTaskFactory(factory.alchemy.SQLAlchemyModelFactory):
+        class Meta:
+            model = FamilyTask
+            sqlalchemy_session = db_session.sync_session
+
+        id = factory.LazyFunction(uuid.uuid4)
+        title = factory.Faker("sentence", nb_words=4)
+        done = False
+        created_at = factory.LazyFunction(datetime.now)
+        updated_at = factory.LazyFunction(datetime.now)
+
+        family_id = factory.LazyAttribute(lambda o: family_factory().id)
+
+        creator = factory.LazyAttribute(lambda o: user_factory())
+        creator_member = factory.LazyAttribute(
+            lambda o: family_member_factory(user_id=o.creator.id, family_id=o.family_id)
+        )
+        creator_id = factory.LazyAttribute(lambda o: o.creator.id)
+
+        assignee = factory.LazyAttribute(lambda o: user_factory())
+        assignee_member = factory.LazyAttribute(
+            lambda o: family_member_factory(
+                user_id=o.assignee.id, family_id=o.family_id
+            )
+        )
+        assignee_id = factory.LazyAttribute(lambda o: o.assignee.id)
+
+    return FamilyTaskFactory
+
+
+@pytest.fixture
+def family_task_create_payload_factory():
+    class FamilyTaskCreatePayloadFactory(factory.Factory):
+        class Meta:
+            model = dict
+
+        family_id = factory.LazyAttribute(lambda o: str(uuid.uuid4()))
+        assignee_id = factory.LazyAttribute(lambda o: str(uuid.uuid4()))
+        title = factory.Faker("sentence", nb_words=4)
+
+    return FamilyTaskCreatePayloadFactory
