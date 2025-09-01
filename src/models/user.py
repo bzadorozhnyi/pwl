@@ -14,4 +14,4 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now, nullable=False)
     updated_at: datetime = Field(default_factory=datetime.now, nullable=False)
 
-    family: "Family" = Relationship(back_populates="users")  # noqa: F821
+    families: list["FamilyMember"] = Relationship(back_populates="user")  # noqa: F821
