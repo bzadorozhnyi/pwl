@@ -7,7 +7,7 @@ from core.pagination import Paginator
 from exceptions import ForbiddenException, InputException, NotFoundException
 from models.family_task import FamilyTask
 from repositories.family_task import FamilyTaskRepository, get_family_task_repository
-from schemas.family_task import CreateFamilyTaskIn, FamilyTaskOut, UpdateFamilyTaskIn
+from schemas.family_task import CreateFamilyTaskIn, UpdateFamilyTaskIn
 from schemas.pagination import Paginated
 from services.family import FamilyService, get_family_service
 
@@ -54,7 +54,7 @@ class FamilyTaskService:
 
     async def update_family_task(
         self, task_id: str, update_data: UpdateFamilyTaskIn, user_id: uuid.UUID
-    ) -> FamilyTaskOut:
+    ) -> FamilyTask:
         family_task = await self.family_task_repository.get_by_id(uuid.UUID(task_id))
         if not family_task:
             raise NotFoundException("Family task not found")
