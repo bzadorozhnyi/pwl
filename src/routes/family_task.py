@@ -10,7 +10,7 @@ from schemas.family_task import CreateFamilyTaskIn, FamilyTaskOut
 from schemas.pagination import Paginated
 from services.family_task import FamilyTaskService, get_family_task_service
 
-router = APIRouter(prefix="/family-tasks", tags=["family-tasks"])
+router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=FamilyTaskOut)

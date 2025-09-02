@@ -60,7 +60,7 @@ async def test_create_family_task_success_assign_yourself(
         family_id=str(family.id), assignee_id=str(family_member.user_id)
     )
     response = await async_client.post(
-        "/api/family-tasks/",
+        "/api/tasks/",
         headers={"authorization": f"Bearer {access_token}"},
         json=payload,
     )
@@ -106,7 +106,7 @@ async def test_create_family_task_success(
         family_id=str(family.id), assignee_id=str(other_user.id)
     )
     response = await async_client.post(
-        "/api/family-tasks/",
+        "/api/tasks/",
         headers={"authorization": f"Bearer {access_token}"},
         json=payload,
     )
@@ -144,7 +144,7 @@ async def test_cannot_create_family_task_by_non_member(
         family_id=str(family.id), assignee_id=str(user.id)
     )
     response = await async_client.post(
-        "/api/family-tasks/",
+        "/api/tasks/",
         headers={"authorization": f"Bearer {access_token}"},
         json=payload,
     )
@@ -178,7 +178,7 @@ async def test_cannot_create_family_task_for_non_member(
         family_id=str(family.id), assignee_id=str(user_not_from_family.id)
     )
     response = await async_client.post(
-        "/api/family-tasks/",
+        "/api/tasks/",
         headers={"authorization": f"Bearer {access_token}"},
         json=payload,
     )
@@ -211,7 +211,7 @@ async def test_list_family_tasks_success(
     assert access_token is not None
 
     response = await async_client.get(
-        f"/api/family-tasks/{family.id}/",
+        f"/api/tasks/{family.id}/",
         headers={"authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -253,7 +253,7 @@ async def test_cannot_list_other_family_tasks(
     assert access_token is not None
 
     response = await async_client.get(
-        f"/api/family-tasks/{family2.id}/",
+        f"/api/tasks/{family2.id}/",
         headers={"authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -284,7 +284,7 @@ async def test_paginated_list_family_tasks_multiple_pages(
     headers = {"authorization": f"Bearer {access_token}"}
 
     response = await async_client.get(
-        f"/api/family-tasks/{family.id}/?page=1&page_size=10",
+        f"/api/tasks/{family.id}/?page=1&page_size=10",
         headers=headers,
     )
     assert response.status_code == status.HTTP_200_OK
