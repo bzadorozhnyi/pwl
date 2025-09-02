@@ -502,6 +502,7 @@ async def test_cannot_update_with_empty_title(
 
 @pytest.mark.anyio
 async def test_cannot_update_task_creator(
+    db_session,
     async_client,
     user_factory,
     family_factory,
@@ -531,7 +532,13 @@ async def test_cannot_update_task_creator(
         json=update_data,
         headers={"authorization": f"Bearer {access_token}"},
     )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_200_OK
+
+    updated_task = await db_session.scalar(
+        select(FamilyTask).where(FamilyTask.id == task.id)
+    )
+
+    assert updated_task.creator_id == user1.id  # stay the same as before
 
 
 @pytest.mark.anyio
