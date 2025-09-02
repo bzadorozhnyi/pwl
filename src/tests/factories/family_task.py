@@ -69,7 +69,9 @@ def family_task_create_payload_factory(
 
 
 @pytest.fixture
-def family_task_update_payload_factory(user_factory, family_factory, family_member_factory):
+def family_task_update_payload_factory(
+    user_factory, family_factory, family_member_factory
+):
     class FamilyTaskUpdatePayloadFactory(factory.DictFactory):
         assignee_id = None
         title = factory.Faker("sentence", nb_words=4)
