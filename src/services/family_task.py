@@ -37,9 +37,8 @@ class FamilyTaskService:
             raise ForbiddenException("Assignee is not member of family")
 
         family_task = FamilyTask(**family_task_data.model_dump(), creator_id=creator_id)
-        family_task = await self.family_task_repository.create(family_task)
 
-        return FamilyTaskOut(**family_task.model_dump())
+        return await self.family_task_repository.create(family_task)
 
     async def list_family_tasks(
         self, user_id: uuid.UUID, family_id: str, paginator: Paginator
