@@ -1,6 +1,8 @@
 import uuid
+from typing import Annotated
 
 from pydantic import BaseModel
+from sqlmodel import Field
 
 
 class CreateFamilyTaskIn(BaseModel):
@@ -11,7 +13,7 @@ class CreateFamilyTaskIn(BaseModel):
 
 class UpdateFamilyTaskIn(BaseModel):
     assignee_id: uuid.UUID | None = None
-    title: str | None = None
+    title: Annotated[str, Field(min_length=1)] | None = None
     done: bool | None = None
 
 
