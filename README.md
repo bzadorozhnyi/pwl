@@ -29,5 +29,6 @@ Use Docker Compose for easy local setup. It starts the API and PostgreSQL databa
 
 ### 🎨 For Frontend Developers
 
-- API Docs URL: [http://127.0.0.1:8000/docs/](http://127.0.0.1:8000/docs/)
+- API Docs URL: [http://127.0.0.1:8000/docs/](http://127.0.0.1:8000/api/docs/)
+
 
