@@ -362,7 +362,7 @@ async def test_update_family_task_success(
     data = response.json()
 
     assert data["title"] == update_data["title"]
-    assert data["assignee_id"] == update_data["assignee_id"]
+    assert data["assignee"]["id"] == update_data["assignee_id"]
     assert data["done"] == update_data["done"]
     _assert_family_task_response_schema(data)
 
