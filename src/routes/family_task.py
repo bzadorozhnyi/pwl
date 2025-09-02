@@ -73,7 +73,7 @@ async def update_family_task(
 
 
 @router.patch(
-    "/{task_id}/",
+    "/{task_id}/done/",
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
         403: {
