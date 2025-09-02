@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends
@@ -16,6 +17,20 @@ class FamilyTaskRepository:
         self.session = session
 
     async def create(self, family_task: FamilyTask) -> FamilyTask:
+        self.session.add(family_task)
+        await self.session.commit()
+        await self.session.refresh(family_task)
+
+        return family_task
+
+    async def get_by_id(self, id: uuid.UUID) -> FamilyTask | None:
+        statement = select(FamilyTask).where(FamilyTask.id == id)
+
+        return await self.session.scalar(statement)
+
+    async def update(self, family_task: FamilyTask) -> FamilyTask:
+        family_task.updated_at = datetime.now()
+
         self.session.add(family_task)
         await self.session.commit()
         await self.session.refresh(family_task)

@@ -66,3 +66,16 @@ def family_task_create_payload_factory(
             self["assignee_id"] = str(assignee.id)
 
     return FamilyTaskCreatePayloadFactory
+
+
+@pytest.fixture
+def family_task_update_payload_factory():
+    class FamilyTaskUpdatePayloadFactory(factory.Factory):
+        class Meta:
+            model = dict
+
+        assignee_id = factory.LazyAttribute(lambda o: str(uuid.uuid4()))
+        title = factory.Faker("sentence", nb_words=4)
+        done = factory.Faker("pybool")
+
+    return FamilyTaskUpdatePayloadFactory

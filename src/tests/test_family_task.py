@@ -326,6 +326,47 @@ async def test_paginated_list_family_tasks_multiple_pages(
     _assert_family_task_list_response_schema(data2)
 
 
+@pytest.mark.anyio
+async def test_update_family_task_success(
+    async_client,
+    user_factory,
+    family_factory,
+    family_member_factory,
+    family_task_factory,
+    family_task_update_payload_factory,
+):
+    """Test updating a family task."""
+    user1 = user_factory()
+    user2 = user_factory()
+
+    family = family_factory()
+    family_member_factory(family_id=family.id, user_id=user1.id)
+    family_member_factory(family_id=family.id, user_id=user2.id)
+
+    task = family_task_factory(
+        family_id=family.id, creator_id=user1.id, assignee_id=user1.id
+    )
+
+    payload = {"identifier": user1.email, "password": "password"}
+    auth_response = await async_client.post("/api/auth/token/", json=payload)
+    assert auth_response.status_code == status.HTTP_200_OK
+    access_token = auth_response.json()["tokens"]["access_token"]
+
+    update_data = family_task_update_payload_factory(assignee_id=str(user2.id), done=True)
+    response = await async_client.put(
+        f"/api/tasks/{task.id}/",
+        json=update_data,
+        headers={"authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+
+    assert data["title"] == update_data["title"]
+    assert data["assignee_id"] == update_data["assignee_id"]
+    assert data["done"] == update_data["done"]
+    _assert_family_task_response_schema(data)
+
+
 def _assert_family_task_response_schema(data):
     """Validate that the response matches the expected schema."""
     try:

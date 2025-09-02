@@ -9,6 +9,16 @@ class CreateFamilyTaskIn(BaseModel):
     title: str
 
 
+class UpdateFamilyTaskIn(BaseModel):
+    assignee_id: uuid.UUID | None = None
+    title: str | None = None
+    done: bool | None = None
+
+
+class UpdateDoneStatusFamilyTaskIn(BaseModel):
+    done: bool
+
+
 class AssigneeOut(BaseModel):
     id: uuid.UUID
     first_name: str
