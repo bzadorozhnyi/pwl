@@ -19,13 +19,15 @@ Use Docker Compose for easy local setup. It starts the API and PostgreSQL databa
 ### 🏁 Getting Started
 
 1. Clone the repository.
-2. Start the services:
+2. Copy `.env.example` to `.env` and fill in the required values.
+3. Start the services:
    ```bash
    docker compose up --build
    ```
 
-3. The API will be available at [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+4. The API will be available at [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
 
 ### 🎨 For Frontend Developers
 
 - API Docs URL: [http://127.0.0.1:8000/docs/](http://127.0.0.1:8000/docs/)
+
