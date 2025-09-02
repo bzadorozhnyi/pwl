@@ -63,6 +63,6 @@ def family_task_create_payload_factory(
                 return
             assignee = user_factory()
             family_member_factory(user_id=assignee.id, family_id=self["family_id"])
-            self["assignee_id"] = assignee.id
+            self["assignee_id"] = str(assignee.id)
 
     return FamilyTaskCreatePayloadFactory
