@@ -536,25 +536,30 @@ async def test_cannot_update_task_creator(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "initial_done, update_done",
+    "role, initial_done, update_done",
     [
-        (False, False),
-        (False, True),
-        (True, False),
-        (True, True),
+        pytest.param("creator", False, False, id="creator-False->False"),
+        pytest.param("creator", False, True, id="creator-False->True"),
+        pytest.param("creator", True, False, id="creator-True->False"),
+        pytest.param("creator", True, True, id="creator-True->True"),
+        pytest.param("assignee", False, False, id="assignee-False->False"),
+        pytest.param("assignee", False, True, id="assignee-False->True"),
+        pytest.param("assignee", True, False, id="assignee-True->False"),
+        pytest.param("assignee", True, True, id="assignee-True->True"),
     ],
 )
-async def test_update_task_done_success_by_creator(
+async def test_update_task_done_success(
     async_client,
     db_session,
     user_factory,
     family_factory,
     family_member_factory,
     family_task_factory,
+    role,
     initial_done,
     update_done,
 ):
-    """Test that creator can update task's done status."""
+    """Test that creator or assignee can update task's done status."""
     creator = user_factory()
     assignee = user_factory()
     family = family_factory()
@@ -568,7 +573,8 @@ async def test_update_task_done_success_by_creator(
         done=initial_done,
     )
 
-    payload = {"identifier": creator.email, "password": "password"}
+    user = creator if role == "creator" else assignee
+    payload = {"identifier": user.email, "password": "password"}
     auth_response = await async_client.post("/api/auth/token/", json=payload)
     assert auth_response.status_code == status.HTTP_200_OK
     access_token = auth_response.json()["tokens"]["access_token"]
@@ -582,66 +588,11 @@ async def test_update_task_done_success_by_creator(
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
-    family_task = await db_session.scalar(
-        select(FamilyTask).where(FamilyTask.creator_id == creator.id)
+    updated_task = await db_session.scalar(
+        select(FamilyTask).where(FamilyTask.id == task.id)
     )
 
-    assert family_task.done == update_data["done"]
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "initial_done, update_done",
-    [
-        (False, False),
-        (False, True),
-        (True, False),
-        (True, True),
-    ],
-)
-async def test_update_task_done_success_by_assignee(
-    async_client,
-    db_session,
-    user_factory,
-    family_factory,
-    family_member_factory,
-    family_task_factory,
-    initial_done,
-    update_done,
-):
-    """Test that assignee can update task's done status."""
-    creator = user_factory()
-    assignee = user_factory()
-    family = family_factory()
-    family_member_factory(family_id=family.id, user_id=creator.id)
-    family_member_factory(family_id=family.id, user_id=assignee.id)
-
-    task = family_task_factory(
-        family_id=family.id,
-        creator_id=creator.id,
-        assignee_id=assignee.id,
-        done=initial_done,
-    )
-
-    payload = {"identifier": assignee.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
-
-    update_data = {"done": update_done}
-    response = await async_client.patch(
-        f"/api/tasks/{task.id}/done/",
-        json=update_data,
-        headers={"authorization": f"Bearer {access_token}"},
-    )
-
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-
-    family_task = await db_session.scalar(
-        select(FamilyTask).where(FamilyTask.creator_id == creator.id)
-    )
-
-    assert family_task.done == update_data["done"]
+    assert updated_task.done == update_data["done"]
 
 
 @pytest.mark.anyio
