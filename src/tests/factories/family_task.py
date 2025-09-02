@@ -24,19 +24,26 @@ def family_task_factory(
 
         family_id = factory.LazyAttribute(lambda o: family_factory().id)
 
-        creator = factory.LazyAttribute(lambda o: user_factory())
-        creator_member = factory.LazyAttribute(
-            lambda o: family_member_factory(user_id=o.creator.id, family_id=o.family_id)
-        )
-        creator_id = factory.LazyAttribute(lambda o: o.creator.id)
+        creator_id = None
+        assignee_id = None
 
-        assignee = factory.LazyAttribute(lambda o: user_factory())
-        assignee_member = factory.LazyAttribute(
-            lambda o: family_member_factory(
-                user_id=o.assignee.id, family_id=o.family_id
-            )
-        )
-        assignee_id = factory.LazyAttribute(lambda o: o.assignee.id)
+        @factory.post_generation
+        def set_creator(self, create, extracted, **kwargs):
+            if self.creator_id is not None:
+                return
+            creator = user_factory()
+            family_member_factory(user_id=creator.id, family_id=self.family_id)
+
+            self.creator_id = creator.id
+
+        @factory.post_generation
+        def set_assignee(self, create, extracted, **kwargs):
+            if self.assignee_id is not None:
+                return
+            assignee = user_factory()
+            family_member_factory(user_id=assignee.id, family_id=self.family_id)
+
+            self.assignee_id = assignee.id
 
     return FamilyTaskFactory
 

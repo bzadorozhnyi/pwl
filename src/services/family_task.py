@@ -3,10 +3,12 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from core.pagination import Paginator
 from exceptions import ForbiddenException
 from models.family_task import FamilyTask
 from repositories.family_task import FamilyTaskRepository, get_family_task_repository
 from schemas.family_task import CreateFamilyTaskIn, FamilyTaskOut
+from schemas.pagination import Paginated
 from services.family import FamilyService, get_family_service
 
 
@@ -38,6 +40,18 @@ class FamilyTaskService:
         family_task = await self.family_task_repository.create(family_task)
 
         return FamilyTaskOut(**family_task.model_dump())
+
+    async def list_family_tasks(
+        self, user_id: uuid.UUID, family_id: str, paginator: Paginator
+    ) -> Paginated[FamilyTaskOut]:
+        is_member = await self.family_service.is_member(uuid.UUID(family_id), user_id)
+        if not is_member:
+            raise ForbiddenException("User is not member of family")
+
+        family_tasks = await self.family_task_repository.list_by_family_id(
+            uuid.UUID(family_id), paginator
+        )
+        return family_tasks
 
 
 def get_family_task_service(
