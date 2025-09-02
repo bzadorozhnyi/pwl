@@ -7,7 +7,9 @@ from core.pagination import Paginator
 from exceptions import ForbiddenException
 from models.family_task import FamilyTask
 from repositories.family_task import FamilyTaskRepository, get_family_task_repository
-from schemas.family_task import CreateFamilyTaskIn, FamilyTaskOut
+from schemas.family_task import (
+    CreateFamilyTaskIn,
+)
 from schemas.pagination import Paginated
 from services.family import FamilyService, get_family_service
 
@@ -23,7 +25,7 @@ class FamilyTaskService:
 
     async def create_family_task(
         self, family_task_data: CreateFamilyTaskIn, creator_id: uuid.UUID
-    ) -> FamilyTaskOut:
+    ) -> FamilyTask:
         is_creator_family_member = await self.family_service.is_member(
             family_task_data.family_id, creator_id
         )
@@ -42,7 +44,7 @@ class FamilyTaskService:
 
     async def list_family_tasks(
         self, user_id: uuid.UUID, family_id: str, paginator: Paginator
-    ) -> Paginated[FamilyTaskOut]:
+    ) -> Paginated[FamilyTask]:
         is_member = await self.family_service.is_member(uuid.UUID(family_id), user_id)
         if not is_member:
             raise ForbiddenException("User is not member of family")

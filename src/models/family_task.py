@@ -15,3 +15,15 @@ class FamilyTask(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.now, nullable=False)
 
     family: "Family" = Relationship(back_populates="tasks")  # noqa: F821
+    creator: "User" = Relationship(  # noqa: F821
+        sa_relationship_kwargs={
+            "foreign_keys": "FamilyTask.creator_id",
+            "lazy": "selectin",
+        },
+    )
+    assignee: "User" = Relationship(  # noqa: F821
+        sa_relationship_kwargs={
+            "foreign_keys": "FamilyTask.assignee_id",
+            "lazy": "selectin",
+        },
+    )

@@ -12,14 +12,33 @@ family_task_response_schema = {
     "properties": {
         "id": {"type": "string", "format": "uuid"},
         "family_id": {"type": "string", "format": "uuid"},
-        "assignee_id": {"type": "string", "format": "uuid"},
-        "creator_id": {"type": "string", "format": "uuid"},
+        "assignee": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "string", "format": "uuid"},
+                "first_name": {"type": "string"},
+                "last_name": {"type": "string"},
+            },
+            "required": ["id", "first_name", "last_name"],
+            "additionalProperties": False,
+        },
+        "creator": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "string", "format": "uuid"},
+                "first_name": {"type": "string"},
+                "last_name": {"type": "string"},
+            },
+            "required": ["id", "first_name", "last_name"],
+            "additionalProperties": False,
+        },
         "title": {"type": "string"},
         "done": {"type": "boolean"},
     },
-    "required": ["id", "family_id", "assignee_id", "creator_id", "title", "done"],
+    "required": ["id", "family_id", "assignee", "creator", "title", "done"],
     "additionalProperties": False,
 }
+
 
 family_task_list_response_schema = {
     "type": "object",
