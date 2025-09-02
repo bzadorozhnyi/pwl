@@ -49,13 +49,20 @@ def family_task_factory(
 
 
 @pytest.fixture
-def family_task_create_payload_factory():
-    class FamilyTaskCreatePayloadFactory(factory.Factory):
-        class Meta:
-            model = dict
-
-        family_id = factory.LazyAttribute(lambda o: str(uuid.uuid4()))
-        assignee_id = factory.LazyAttribute(lambda o: str(uuid.uuid4()))
+def family_task_create_payload_factory(
+    family_factory, user_factory, family_member_factory
+):
+    class FamilyTaskCreatePayloadFactory(factory.DictFactory):
+        family_id = factory.LazyAttribute(lambda o: family_factory().id)
         title = factory.Faker("sentence", nb_words=4)
+        assignee_id = None
+
+        @factory.post_generation
+        def set_assignee(self, create, extracted, **kwargs):
+            if self["assignee_id"] is not None:
+                return
+            assignee = user_factory()
+            family_member_factory(user_id=assignee.id, family_id=self["family_id"])
+            self["assignee_id"] = assignee.id
 
     return FamilyTaskCreatePayloadFactory
