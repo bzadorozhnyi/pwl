@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field
 
 
@@ -16,9 +16,13 @@ class UpdateFamilyTaskIn(BaseModel):
     title: Annotated[str, Field(min_length=1)] | None = None
     done: bool | None = None
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class UpdateDoneStatusFamilyTaskIn(BaseModel):
     done: bool
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class AssigneeOut(BaseModel):
