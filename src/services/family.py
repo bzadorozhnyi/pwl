@@ -11,8 +11,8 @@ class FamilyService:
     def __init__(self, family_repository: FamilyRepository):
         self.family_repository = family_repository
 
-    def is_member(self, family_id: uuid.UUID, user_id: uuid.UUID) -> bool:
-        return self.family_repository.is_member(family_id, user_id)
+    async def is_member(self, family_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+        return await self.family_repository.is_member(family_id, user_id)
 
     async def get_user_role(
         self, family_id: uuid.UUID, user_id: uuid.UUID
