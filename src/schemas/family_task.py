@@ -8,7 +8,7 @@ from sqlmodel import Field
 class CreateFamilyTaskIn(BaseModel):
     family_id: uuid.UUID
     assignee_id: uuid.UUID
-    title: str
+    title: Annotated[str, Field(min_length=1)]
 
 
 class UpdateFamilyTaskIn(BaseModel):
