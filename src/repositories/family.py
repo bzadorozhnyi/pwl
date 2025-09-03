@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from core.db import get_session
 from models.family import Family, FamilyMember, FamilyRole
@@ -34,6 +35,14 @@ class FamilyRepository:
         await self.session.refresh(family_member)
 
         return family_member
+
+    async def is_member(self, family_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+        statement = select(FamilyMember).where(
+            FamilyMember.family_id == family_id, FamilyMember.user_id == user_id
+        )
+        result = await self.session.execute(statement)
+
+        return result.scalar() is not None
 
 
 def get_family_repository(

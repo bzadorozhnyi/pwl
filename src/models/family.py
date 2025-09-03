@@ -13,6 +13,7 @@ class Family(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     members: list["FamilyMember"] = Relationship(back_populates="family")
+    tasks: list["FamilyTask"] = Relationship(back_populates="family")  # noqa: F821
 
 
 class FamilyMember(SQLModel, table=True):
