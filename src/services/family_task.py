@@ -5,7 +5,9 @@ from fastapi import Depends
 
 from core.pagination import Paginator
 from exceptions import ForbiddenException, InputException, NotFoundException
+from models.family import FamilyRole
 from models.family_task import FamilyTask
+from models.user import User
 from repositories.family_task import FamilyTaskRepository, get_family_task_repository
 from schemas.family_task import CreateFamilyTaskIn, UpdateFamilyTaskIn
 from schemas.pagination import Paginated
@@ -105,6 +107,31 @@ class FamilyTaskService:
 
         if family_task.creator_id != user_id and family_task.assignee_id != user_id:
             raise ForbiddenException("Only the creator or assignee can update the task")
+
+    async def delete_family_task(self, task_id: str, user: User):
+        family_task = await self.family_task_repository.get_by_id(uuid.UUID(task_id))
+        await self._check_delete_permissions(family_task, user)
+
+        await self.family_task_repository.delete(family_task)
+
+    async def _check_delete_permissions(
+        self,
+        family_task: FamilyTask,
+        user: User,
+    ):
+        if not family_task:
+            raise NotFoundException("Family task not found")
+
+        is_member = await self.family_service.is_member(family_task.family_id, user.id)
+        if not is_member:
+            raise ForbiddenException("User is not member of family")
+
+        user_role = await self.family_service.get_user_role(
+            family_task.family_id, user.id
+        )
+
+        if family_task.creator_id != user.id and user_role != FamilyRole.ADMIN:
+            raise ForbiddenException("Only the creator or admin can delete the task")
 
 
 def get_family_task_service(

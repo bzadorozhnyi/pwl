@@ -44,6 +44,15 @@ class FamilyRepository:
 
         return result.scalar() is not None
 
+    async def get_user_role(
+        self, family_id: uuid.UUID, user_id: uuid.UUID
+    ) -> FamilyRole | None:
+        statement = select(FamilyMember.role).where(
+            FamilyMember.family_id == family_id, FamilyMember.user_id == user_id
+        )
+        result = await self.session.execute(statement)
+        return result.scalar()
+
 
 def get_family_repository(
     session: Annotated[AsyncSession, Depends(get_session)],

@@ -44,6 +44,10 @@ class FamilyTaskRepository:
             select(FamilyTask).where(FamilyTask.family_id == family_id)
         )
 
+    async def delete(self, family_task: FamilyTask):
+        await self.session.delete(family_task)
+        await self.session.commit()
+
 
 def get_family_task_repository(
     session: Annotated[AsyncSession, Depends(get_session)],

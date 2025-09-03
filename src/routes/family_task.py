@@ -91,3 +91,21 @@ async def update_task_done(
     return await family_task_service.update_task_done(
         task_id, body.done, current_user.id
     )
+
+
+@router.delete(
+    "/{task_id}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        403: {
+            "description": "Forbidden: only a family member who is the creator or admin can delete the task"
+        },
+        404: {"description": "Not Found: family task not found"},
+    },
+)
+async def delete_family_task(
+    task_id: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    family_task_service: Annotated[FamilyTaskService, Depends(get_family_task_service)],
+):
+    return await family_task_service.delete_family_task(task_id, current_user)
