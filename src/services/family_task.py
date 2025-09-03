@@ -81,6 +81,10 @@ class FamilyTaskService:
         if not family_task:
             raise NotFoundException("Family task not found")
 
+        is_member = await self.family_service.is_member(family_task.family_id, user_id)
+        if not is_member:
+            raise ForbiddenException("User is not member of family")
+
         if family_task.creator_id != user_id and family_task.assignee_id != user_id:
             raise ForbiddenException("Only the creator or assignee can update the task")
 

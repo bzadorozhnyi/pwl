@@ -77,7 +77,7 @@ async def update_family_task(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
         403: {
-            "description": "Forbidden: only the creator or assignee can update the task"
+            "description": "Forbidden: only a family member who is the creator or assignee can update the task"
         },
         404: {"description": "Not Found: family task not found"},
     },

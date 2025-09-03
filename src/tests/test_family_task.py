@@ -659,6 +659,40 @@ async def test_update_task_done_forbidden(
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
+@pytest.mark.anyio
+async def test_update_task_done_forbidden_for_non_family_member(
+    async_client,
+    user_factory,
+    family_factory,
+    family_member_factory,
+    family_task_factory,
+):
+    """Test that a user who is creator nor assignee cannot update done if not a family member."""
+    creator = user_factory()
+    assignee = user_factory()
+
+    family = family_factory()
+    # only assignee is a family member
+    family_member_factory(family_id=family.id, user_id=assignee.id)
+
+    task = family_task_factory(
+        family_id=family.id, creator_id=creator.id, assignee_id=assignee.id, done=False
+    )
+
+    payload = {"identifier": creator.email, "password": "password"}
+    auth_response = await async_client.post("/api/auth/token/", json=payload)
+    access_token = auth_response.json()["tokens"]["access_token"]
+
+    update_data = {"done": True}
+    response = await async_client.patch(
+        f"/api/tasks/{task.id}/done/",
+        json=update_data,
+        headers={"authorization": f"Bearer {access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def _assert_family_task_response_schema(data):
     """Validate that the response matches the expected schema."""
     try:
