@@ -1,12 +1,24 @@
 import uuid
+from typing import Annotated
 
 from pydantic import BaseModel
+from sqlmodel import Field
 
 
 class CreateFamilyTaskIn(BaseModel):
     family_id: uuid.UUID
     assignee_id: uuid.UUID
     title: str
+
+
+class UpdateFamilyTaskIn(BaseModel):
+    assignee_id: uuid.UUID | None = None
+    title: Annotated[str, Field(min_length=1)] | None = None
+    done: bool | None = None
+
+
+class UpdateDoneStatusFamilyTaskIn(BaseModel):
+    done: bool
 
 
 class AssigneeOut(BaseModel):

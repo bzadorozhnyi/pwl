@@ -66,3 +66,24 @@ def family_task_create_payload_factory(
             self["assignee_id"] = str(assignee.id)
 
     return FamilyTaskCreatePayloadFactory
+
+
+@pytest.fixture
+def family_task_update_payload_factory(
+    user_factory, family_factory, family_member_factory
+):
+    class FamilyTaskUpdatePayloadFactory(factory.DictFactory):
+        assignee_id = None
+        title = factory.Faker("sentence", nb_words=4)
+        done = factory.Faker("pybool")
+
+        @factory.post_generation
+        def set_assignee(self, create, extracted, **kwargs):
+            if self["assignee_id"] is not None:
+                return
+            assignee = user_factory()
+            family = family_factory()
+            family_member_factory(user_id=assignee.id, family_id=family.id)
+            self["assignee_id"] = str(assignee.id)
+
+    return FamilyTaskUpdatePayloadFactory
