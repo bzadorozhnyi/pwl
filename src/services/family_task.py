@@ -97,7 +97,7 @@ class FamilyTaskService:
         self,
         family_task: FamilyTask,
         user_id: uuid.UUID,
-    ) -> None:
+    ):
         if not family_task:
             raise NotFoundException("Family task not found")
 

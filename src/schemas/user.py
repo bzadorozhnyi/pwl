@@ -12,8 +12,8 @@ from schemas.token import TokenPairOut
 class UserIn(SQLModel):
     email: EmailStr
     password: Annotated[str, Field(min_length=8, max_length=128)]
-    first_name: Annotated[str, Field(max_length=100)]
-    last_name: Annotated[str, Field(max_length=100)]
+    first_name: Annotated[str, Field(min_length=1, max_length=100)]
+    last_name: Annotated[str, Field(min_length=1, max_length=100)]
 
 
 class UserOut(SQLModel):

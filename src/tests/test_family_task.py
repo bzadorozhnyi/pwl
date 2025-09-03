@@ -206,6 +206,39 @@ async def test_cannot_create_family_task_for_non_member(
 
 
 @pytest.mark.anyio
+async def test_cannot_create_family_task_with_empty_title(
+    async_client,
+    user_factory,
+    family_factory,
+    family_member_factory,
+    family_task_create_payload_factory,
+):
+    """Test that cannot create a family task with an empty title."""
+    user = user_factory()
+    family = family_factory()
+    family_member_factory(family_id=family.id, user_id=user.id)
+
+    payload = {"identifier": user.email, "password": "password"}
+    response = await async_client.post("/api/auth/token/", json=payload)
+
+    assert response.status_code == status.HTTP_200_OK
+
+    access_token = response.json().get("tokens", {}).get("access_token")
+    assert access_token is not None
+
+    payload = family_task_create_payload_factory(
+        family_id=str(family.id), assignee_id=str(user.id), title=""
+    )
+    response = await async_client.post(
+        "/api/tasks/",
+        headers={"authorization": f"Bearer {access_token}"},
+        json=payload,
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.anyio
 async def test_list_family_tasks_success(
     async_client,
     user_factory,

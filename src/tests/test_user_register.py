@@ -95,6 +95,25 @@ async def test_cannot_register_user_with_missing_fields(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("name", ["first_name", "last_name"])
+async def test_cannot_register_user_with_empty_name(
+    async_client,
+    user_create_payload_factory,
+    name,
+):
+    """Test that user cannot register with empty first or last name."""
+    payload = user_create_payload_factory()
+    payload[name] = ""
+
+    response = await async_client.post(
+        "/api/auth/register/",
+        json=payload,
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.anyio
 async def test_cannot_create_user_with_existing_email(
     async_client,
     user_factory,
