@@ -659,6 +659,13 @@ async def test_update_task_done_forbidden(
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
+@pytest.mark.parametrize(
+    "role",
+    [
+        pytest.param("creator", id="creator cannot update"),
+        pytest.param("assignee", id="assignee cannot update"),
+    ],
+)
 @pytest.mark.anyio
 async def test_update_task_done_forbidden_for_non_family_member(
     async_client,
@@ -666,20 +673,24 @@ async def test_update_task_done_forbidden_for_non_family_member(
     family_factory,
     family_member_factory,
     family_task_factory,
+    role,
 ):
     """Test that a user who is creator nor assignee cannot update done if not a family member."""
     creator = user_factory()
     assignee = user_factory()
 
     family = family_factory()
-    # only assignee is a family member
-    family_member_factory(family_id=family.id, user_id=assignee.id)
+    if role == "creator":
+        family_member_factory(family_id=family.id, user_id=assignee.id)
+    else:
+        family_member_factory(family_id=family.id, user_id=creator.id)
 
     task = family_task_factory(
         family_id=family.id, creator_id=creator.id, assignee_id=assignee.id, done=False
     )
 
-    payload = {"identifier": creator.email, "password": "password"}
+    user = creator if role == "creator" else assignee
+    payload = {"identifier": user.email, "password": "password"}
     auth_response = await async_client.post("/api/auth/token/", json=payload)
     access_token = auth_response.json()["tokens"]["access_token"]
 
