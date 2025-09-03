@@ -405,18 +405,18 @@ async def test_update_family_task_only_creator(
     family_task_factory,
 ):
     """Test that only the creator can update the task."""
-    user1 = user_factory()
-    user2 = user_factory()
+    creator = user_factory()
+    alignee = user_factory()
 
     family = family_factory()
-    family_member_factory(family_id=family.id, user_id=user1.id)
-    family_member_factory(family_id=family.id, user_id=user2.id)
+    family_member_factory(family_id=family.id, user_id=creator.id)
+    family_member_factory(family_id=family.id, user_id=alignee.id)
 
     task = family_task_factory(
-        family_id=family.id, creator_id=user1.id, assignee_id=user2.id
+        family_id=family.id, creator_id=creator.id, assignee_id=alignee.id
     )
 
-    payload = {"identifier": user2.email, "password": "password"}
+    payload = {"identifier": alignee.email, "password": "password"}
     auth_response = await async_client.post("/api/auth/token/", json=payload)
     assert auth_response.status_code == status.HTTP_200_OK
     access_token = auth_response.json()["tokens"]["access_token"]
@@ -510,23 +510,23 @@ async def test_cannot_update_task_creator(
     family_task_factory,
 ):
     """Test that user cannot update a task's creator."""
-    user1 = user_factory()
-    user2 = user_factory()
+    creator = user_factory()
+    not_creator = user_factory()
 
     family = family_factory()
-    family_member_factory(family_id=family.id, user_id=user1.id)
-    family_member_factory(family_id=family.id, user_id=user2.id)
+    family_member_factory(family_id=family.id, user_id=creator.id)
+    family_member_factory(family_id=family.id, user_id=not_creator.id)
 
     task = family_task_factory(
-        family_id=family.id, creator_id=user1.id, assignee_id=user1.id
+        family_id=family.id, creator_id=creator.id, assignee_id=creator.id
     )
 
-    payload = {"identifier": user1.email, "password": "password"}
+    payload = {"identifier": creator.email, "password": "password"}
     auth_response = await async_client.post("/api/auth/token/", json=payload)
     assert auth_response.status_code == status.HTTP_200_OK
     access_token = auth_response.json()["tokens"]["access_token"]
 
-    update_data = {"creator_id": str(user2.id)}
+    update_data = {"creator_id": str(not_creator.id)}
     response = await async_client.put(
         f"/api/tasks/{task.id}/",
         json=update_data,
@@ -538,7 +538,7 @@ async def test_cannot_update_task_creator(
         select(FamilyTask).where(FamilyTask.id == task.id)
     )
 
-    assert updated_task.creator_id == user1.id  # stay the same as before
+    assert updated_task.creator_id == creator.id  # stay the same as before
 
 
 @pytest.mark.anyio
