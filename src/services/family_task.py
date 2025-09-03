@@ -56,6 +56,20 @@ class FamilyTaskService:
         self, task_id: str, update_data: UpdateFamilyTaskIn, user_id: uuid.UUID
     ) -> FamilyTask:
         family_task = await self.family_task_repository.get_by_id(uuid.UUID(task_id))
+        await self._check_update_permissions(family_task, update_data, user_id)
+
+        update_data = update_data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(family_task, key, value)
+
+        return await self.family_task_repository.update(family_task)
+
+    async def _check_update_permissions(
+        self,
+        family_task: FamilyTask,
+        update_data: UpdateFamilyTaskIn,
+        user_id: uuid.UUID,
+    ) -> FamilyTask:
         if not family_task:
             raise NotFoundException("Family task not found")
 
@@ -70,14 +84,18 @@ class FamilyTaskService:
         ):
             raise InputException("Assignee is not a member of the family")
 
-        update_data = update_data.model_dump(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(family_task, key, value)
-
-        return await self.family_task_repository.update(family_task)
-
     async def update_task_done(self, task_id: str, done: bool, user_id: uuid.UUID):
         family_task = await self.family_task_repository.get_by_id(uuid.UUID(task_id))
+        await self._check_update_done_permissions(family_task, user_id)
+
+        family_task.done = done
+        await self.family_task_repository.update(family_task)
+
+    async def _check_update_done_permissions(
+        self,
+        family_task: FamilyTask,
+        user_id: uuid.UUID,
+    ) -> None:
         if not family_task:
             raise NotFoundException("Family task not found")
 
@@ -87,9 +105,6 @@ class FamilyTaskService:
 
         if family_task.creator_id != user_id and family_task.assignee_id != user_id:
             raise ForbiddenException("Only the creator or assignee can update the task")
-
-        family_task.done = done
-        await self.family_task_repository.update(family_task)
 
 
 def get_family_task_service(
