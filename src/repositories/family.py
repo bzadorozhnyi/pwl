@@ -53,6 +53,14 @@ class FamilyRepository:
         result = await self.session.execute(statement)
         return result.scalar()
 
+    async def get_user_families(self, user_id: uuid.UUID) -> list[uuid.UUID]:
+        statement = select(FamilyMember.family_id).where(
+            FamilyMember.user_id == user_id
+        )
+        result = await self.session.execute(statement)
+
+        return result.scalars().all()
+
 
 def get_family_repository(
     session: Annotated[AsyncSession, Depends(get_session)],
