@@ -19,6 +19,7 @@ services:
     build: .
     environment:
       - DB_HOST=db
+      - SECRET_KEY=d7f35f2be70d7a985a39c6e6d118503dc783ecd88673b8d49896473c64047c55
     ports:
       - 8000:8000
     depends_on:
