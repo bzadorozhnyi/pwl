@@ -10,10 +10,7 @@ class InMemoryWebSocketGroupManager(WebSocketGroupManager[WebSocket]):
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            print("Creating InMemoryWebSocketGroupManager instance")
             cls._instance = super().__new__(cls)
-        else:
-            print("Using existing InMemoryWebSocketGroupManager instance")
         return cls._instance
 
     def __init__(self):
@@ -35,10 +32,6 @@ class InMemoryWebSocketGroupManager(WebSocketGroupManager[WebSocket]):
                 del self._local_groups[group]
 
     async def group_send(self, group: str, message: dict):
-        print(
-            f"Sending message to group {group}: {message}, connections: {len(self._local_groups[group])}"
-        )
-
         if group not in self._local_groups:
             return
 
