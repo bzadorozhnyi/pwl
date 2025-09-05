@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field
 
 
@@ -26,11 +26,15 @@ class AssigneeOut(BaseModel):
     first_name: str
     last_name: str
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class CreatorOut(BaseModel):
     id: uuid.UUID
     first_name: str
     last_name: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FamilyTaskOut(BaseModel):
@@ -40,3 +44,5 @@ class FamilyTaskOut(BaseModel):
     creator: CreatorOut
     title: str
     done: bool
+
+    model_config = ConfigDict(from_attributes=True)

@@ -13,16 +13,22 @@ router = APIRouter()
 @router.websocket("/ws/")
 async def websocket_endpoint(
     websocket: WebSocket,
-    current_user: Annotated[User | None, Depends(get_current_websocket_user)],
+    # current_user: Annotated[User | None, Depends(get_current_websocket_user)],
     websocket_service: Annotated[WebSocketService, Depends(get_websocket_service)],
     group_message_service: Annotated[
         GroupMessageService, Depends(get_group_message_service)
     ],
 ):
-    if current_user is None:
-        return
+    print("HEADERS", websocket.headers)
+    raise Exception("Test exception")
+    # print("WebSocket connection attempt...")
+    await websocket.accept()
+    await websocket.send_json({"event": "connected"})
+    await websocket.close()
+    # if current_user is None:
+    #     return
 
-    await group_message_service.add_to_family(current_user.id, websocket)
+    # await group_message_service.add_to_family(current_user.id, websocket)
 
-    while True:
-        await websocket_service.receive_from_connection(websocket)
+    # while True:
+    #     await websocket_service.receive_from_connection(websocket)

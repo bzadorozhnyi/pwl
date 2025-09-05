@@ -9,6 +9,7 @@ class WebSocketAuthorizationCredentials:
 class WebSocketBearer:
     async def __call__(self, websocket) -> WebSocketAuthorizationCredentials | None:
         authorization = websocket.headers.get("Authorization")
+        print("WebSocket Authorization header:", authorization)
         if not authorization or not authorization.startswith("Bearer "):
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return None

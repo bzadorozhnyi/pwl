@@ -1,3 +1,4 @@
+import json
 import uuid
 from collections import Counter
 
@@ -5,8 +6,10 @@ import jsonschema
 import pytest
 from fastapi import status
 from sqlmodel import select
+import websockets
 
 from models.family_task import FamilyTask
+from routes.family_task import create_family_task
 
 family_task_response_schema = {
     "type": "object",
@@ -937,6 +940,47 @@ async def test_cannot_delete_family_task_by_assignee(
         select(FamilyTask).where(FamilyTask.id == family_task.id)
     )
     assert task is not None
+
+
+@pytest.mark.anyio
+async def test_websocket_family_task_updates(
+    async_client,
+    user_factory,
+    family_factory,
+    family_member_factory,
+    family_task_create_payload_factory,
+):
+    """Test WebSocket receives real-time updates on family tasks."""
+
+    user = user_factory()
+    family = family_factory()
+    family_member_factory(family_id=family.id, user_id=user.id)
+
+    payload = {"identifier": user.email, "password": "password"}
+    print("Payload:", payload)
+    auth_response = await async_client.post("/api/auth/token/", json=payload)
+    assert auth_response.status_code == 200
+    access_token = auth_response.json()["tokens"]["access_token"]
+
+    print("Access Token:", access_token)
+
+    ws_url = f"ws://{async_client.base_url.host}:{async_client.base_url.port}/api/ws/"
+    async with websockets.connect(
+        ws_url, additional_headers={"authorization": f"Bearer {access_token}"}
+    ) as ws:
+        payload = family_task_create_payload_factory(
+            family_id=str(family.id), assignee_id=str(user.id)
+        )
+        print("Creating task with payload:", payload)
+        await async_client.post(
+            "/api/tasks/",
+            headers={"authorization": f"Bearer {access_token}"},
+            json=payload,
+        )
+
+        message = await ws.recv()
+        message = json.loads(message)
+        assert message["event"] == "connected"
 
 
 def _assert_family_task_response_schema(data):

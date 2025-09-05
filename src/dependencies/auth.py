@@ -29,7 +29,9 @@ async def get_current_websocket_user(
     websocket: WebSocket,
     user_service: Annotated[UserService, Depends(get_user_service)],
 ) -> User | None:
+    print("Getting token credentials from WebSocket...")
     token_credentials = await websocket_bearer_scheme(websocket)
+    print("Token credentials:", token_credentials)
     if token_credentials is None:
         return None
     token = token_credentials.credentials
