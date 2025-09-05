@@ -13,5 +13,5 @@ class WebSocketBearer:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return None
 
-        token = authorization[7:]
+        token = authorization.split(" ")[1]
         return WebSocketAuthorizationCredentials(token=token)
