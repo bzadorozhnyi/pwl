@@ -46,7 +46,7 @@ family_task_list_response_schema = {
     "additionalProperties": False,
 }
 
-websocket_family_task_create_event_response_schema = {
+websocket_task_create_response_schema = {
     "type": "object",
     "properties": {
         "family_id": {"type": "string", "format": "uuid"},
@@ -57,7 +57,7 @@ websocket_family_task_create_event_response_schema = {
     "additionalProperties": False,
 }
 
-websocket_family_task_update_event_response_schema = {
+websocket_task_update_response_schema = {
     "type": "object",
     "properties": {
         "family_id": {"type": "string", "format": "uuid"},
@@ -104,22 +104,18 @@ def _assert_family_task_list_response_schema(data):
         pytest.fail(f"Response does not match schema: {e}")
 
 
-def _assert_websocket_family_task_create_event_response_schema(data):
+def _assert_websocket_task_create_response_schema(data):
     """Validate that the websocket event matches the expected schema."""
     try:
-        jsonschema.validate(
-            instance=data, schema=websocket_family_task_create_event_response_schema
-        )
+        jsonschema.validate(instance=data, schema=websocket_task_create_response_schema)
     except jsonschema.exceptions.ValidationError as e:
         pytest.fail(f"WebSocket event does not match schema: {e}")
 
 
-def _assert_websocket_family_task_update_event_response_schema(data):
+def _assert_websocket_task_update_response_schema(data):
     """Validate that the websocket event matches the expected schema."""
     try:
-        jsonschema.validate(
-            instance=data, schema=websocket_family_task_update_event_response_schema
-        )
+        jsonschema.validate(instance=data, schema=websocket_task_update_response_schema)
     except jsonschema.exceptions.ValidationError as e:
         pytest.fail(f"WebSocket event does not match schema: {e}")
 

@@ -6,7 +6,7 @@ from sqlmodel import select
 from models.family_task import FamilyTask
 from tests.test_family_task.schemas_utils import (
     _assert_family_task_response_schema,
-    _assert_websocket_family_task_create_event_response_schema,
+    _assert_websocket_task_create_response_schema,
 )
 
 
@@ -238,4 +238,4 @@ async def test_websocket_family_task_create_success(
         assert response["data"]["id"] == str(family_task.id)
         assert response["data"]["title"] == payload["title"]
 
-        _assert_websocket_family_task_create_event_response_schema(response)
+        _assert_websocket_task_create_response_schema(response)
