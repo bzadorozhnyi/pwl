@@ -1,0 +1,57 @@
+import uuid
+from typing import Literal
+
+from pydantic import BaseModel
+
+from enums.ws import WebSocketServerEvent
+from schemas.family_task import FamilyTaskOut
+
+
+class BaseServerWebSocketEvent(BaseModel):
+    family_id: uuid.UUID
+    event_type: WebSocketServerEvent
+
+
+class CreateFamilyTaskEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_CREATED_TASK] = (
+        WebSocketServerEvent.USER_CREATED_TASK
+    )
+    data: FamilyTaskOut
+
+
+class UpdateFamilyTaskEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_UPDATED_TASK] = (
+        WebSocketServerEvent.USER_UPDATED_TASK
+    )
+    data: FamilyTaskOut
+
+
+class UpdateDoneStatusOut(BaseModel):
+    id: uuid.UUID
+    done: bool
+
+
+class UpdateDoneStatusFamilyTaskEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_UPDATED_TASK_DONE_STATUS] = (
+        WebSocketServerEvent.USER_UPDATED_TASK_DONE_STATUS
+    )
+    data: UpdateDoneStatusOut
+
+
+class DeleteFamilyTaskOut(BaseModel):
+    id: uuid.UUID
+
+
+class DeleteFamilyTaskEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_DELETED_TASK] = (
+        WebSocketServerEvent.USER_DELETED_TASK
+    )
+    data: DeleteFamilyTaskOut
+
+
+ServerWebSocketEvent = (
+    CreateFamilyTaskEvent
+    | UpdateFamilyTaskEvent
+    | UpdateDoneStatusFamilyTaskEvent
+    | DeleteFamilyTaskEvent
+)

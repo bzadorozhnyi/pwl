@@ -11,7 +11,17 @@ from models.user import User
 from repositories.family_task import FamilyTaskRepository, get_family_task_repository
 from schemas.family_task import CreateFamilyTaskIn, UpdateFamilyTaskIn
 from schemas.pagination import Paginated
+from schemas.ws.server import (
+    CreateFamilyTaskEvent,
+    DeleteFamilyTaskEvent,
+    DeleteFamilyTaskOut,
+    ServerWebSocketEvent,
+    UpdateDoneStatusFamilyTaskEvent,
+    UpdateDoneStatusOut,
+    UpdateFamilyTaskEvent,
+)
 from services.family import FamilyService, get_family_service
+from services.group_message import GroupMessageService, get_group_message_service
 
 
 class FamilyTaskService:
@@ -19,13 +29,30 @@ class FamilyTaskService:
         self,
         family_task_repository: FamilyTaskRepository,
         family_service: FamilyService,
+        group_message_service: GroupMessageService,
     ):
         self.family_task_repository = family_task_repository
         self.family_service = family_service
+        self.group_message_service = group_message_service
 
     async def create_family_task(
         self, family_task_data: CreateFamilyTaskIn, creator_id: uuid.UUID
     ) -> FamilyTask:
+        await self._check_create_permissions(family_task_data, creator_id)
+
+        family_task = FamilyTask(**family_task_data.model_dump(), creator_id=creator_id)
+
+        task = await self.family_task_repository.create(family_task)
+
+        await self._send_task_event(
+            creator_id, CreateFamilyTaskEvent(family_id=task.family_id, data=task)
+        )
+
+        return task
+
+    async def _check_create_permissions(
+        self, family_task_data: CreateFamilyTaskIn, creator_id: uuid.UUID
+    ):
         is_creator_family_member = await self.family_service.is_member(
             family_task_data.family_id, creator_id
         )
@@ -38,9 +65,10 @@ class FamilyTaskService:
         if not is_assignee_family_member:
             raise ForbiddenException("Assignee is not member of family")
 
-        family_task = FamilyTask(**family_task_data.model_dump(), creator_id=creator_id)
-
-        return await self.family_task_repository.create(family_task)
+    async def _send_task_event(self, user_id: uuid.UUID, event: ServerWebSocketEvent):
+        await self.group_message_service.send_to_family(
+            user_id, event.model_dump(mode="json")
+        )
 
     async def list_family_tasks(
         self, user_id: uuid.UUID, family_id: str, paginator: Paginator
@@ -64,7 +92,13 @@ class FamilyTaskService:
         for key, value in update_data.items():
             setattr(family_task, key, value)
 
-        return await self.family_task_repository.update(family_task)
+        task = await self.family_task_repository.update(family_task)
+
+        await self._send_task_event(
+            user_id, UpdateFamilyTaskEvent(family_id=task.family_id, data=task)
+        )
+
+        return task
 
     async def _check_update_permissions(
         self,
@@ -93,6 +127,14 @@ class FamilyTaskService:
         family_task.done = done
         await self.family_task_repository.update(family_task)
 
+        await self._send_task_event(
+            user_id,
+            UpdateDoneStatusFamilyTaskEvent(
+                family_id=family_task.family_id,
+                data=UpdateDoneStatusOut(id=family_task.id, done=family_task.done),
+            ),
+        )
+
     async def _check_update_done_permissions(
         self,
         family_task: FamilyTask,
@@ -113,6 +155,14 @@ class FamilyTaskService:
         await self._check_delete_permissions(family_task, user)
 
         await self.family_task_repository.delete(family_task)
+
+        await self._send_task_event(
+            user.id,
+            DeleteFamilyTaskEvent(
+                family_id=family_task.family_id,
+                data=DeleteFamilyTaskOut(id=family_task.id),
+            ),
+        )
 
     async def _check_delete_permissions(
         self,
@@ -139,7 +189,12 @@ def get_family_task_service(
         FamilyTaskRepository, Depends(get_family_task_repository)
     ],
     family_service: Annotated[FamilyService, Depends(get_family_service)],
+    group_message_service: Annotated[
+        GroupMessageService, Depends(get_group_message_service)
+    ],
 ) -> FamilyTaskService:
     return FamilyTaskService(
-        family_task_repository=family_task_repository, family_service=family_service
+        family_task_repository=family_task_repository,
+        family_service=family_service,
+        group_message_service=group_message_service,
     )

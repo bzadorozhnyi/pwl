@@ -5,7 +5,8 @@ import pkgutil
 import pytest
 from alembic import command
 from alembic.config import Config
-from httpx import ASGITransport, AsyncClient
+from httpx import AsyncClient
+from httpx_ws.transport import ASGIWebSocketTransport
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -75,8 +76,8 @@ async def async_client(db_session, email_service):
     app.dependency_overrides[get_email_service] = lambda: email_service
 
     async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://localhost:8000/",
+        transport=ASGIWebSocketTransport(app=app),
+        base_url="http://testserver",
     ) as client:
         yield client
 
