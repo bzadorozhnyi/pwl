@@ -87,6 +87,24 @@ websocket_task_update_done_status_response_schema = {
     "additionalProperties": False,
 }
 
+websocket_family_task_delete_event_response_schema = {
+    "type": "object",
+    "properties": {
+        "family_id": {"type": "string", "format": "uuid"},
+        "event_type": {"const": "user_deleted_task"},
+        "data": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "string", "format": "uuid"},
+            },
+            "required": ["id"],
+            "additionalProperties": False,
+        },
+    },
+    "required": ["family_id", "event_type", "data"],
+    "additionalProperties": False,
+}
+
 
 def _assert_family_task_response_schema(data):
     """Validate that the response matches the expected schema."""
@@ -126,6 +144,17 @@ def _assert_websocket_task_update_done_status_response_schema(data):
         jsonschema.validate(
             instance=data,
             schema=websocket_task_update_done_status_response_schema,
+        )
+    except jsonschema.exceptions.ValidationError as e:
+        pytest.fail(f"WebSocket event does not match schema: {e}")
+
+
+def _assert_websocket_task_delete_response_schema(data):
+    """Validate that the websocket event matches the expected schema."""
+    try:
+        jsonschema.validate(
+            instance=data,
+            schema=websocket_family_task_delete_event_response_schema,
         )
     except jsonschema.exceptions.ValidationError as e:
         pytest.fail(f"WebSocket event does not match schema: {e}")

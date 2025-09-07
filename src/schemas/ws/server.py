@@ -38,6 +38,20 @@ class UpdateDoneStatusFamilyTaskEvent(BaseServerWebSocketEvent):
     data: UpdateDoneStatusOut
 
 
+class DeleteFamilyTaskOut(BaseModel):
+    id: uuid.UUID
+
+
+class DeleteFamilyTaskEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_DELETED_TASK] = (
+        WebSocketServerEvent.USER_DELETED_TASK
+    )
+    data: DeleteFamilyTaskOut
+
+
 ServerWebSocketEvent = (
-    CreateFamilyTaskEvent | UpdateFamilyTaskEvent | UpdateDoneStatusFamilyTaskEvent
+    CreateFamilyTaskEvent
+    | UpdateFamilyTaskEvent
+    | UpdateDoneStatusFamilyTaskEvent
+    | DeleteFamilyTaskEvent
 )

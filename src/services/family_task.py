@@ -13,6 +13,8 @@ from schemas.family_task import CreateFamilyTaskIn, UpdateFamilyTaskIn
 from schemas.pagination import Paginated
 from schemas.ws.server import (
     CreateFamilyTaskEvent,
+    DeleteFamilyTaskEvent,
+    DeleteFamilyTaskOut,
     ServerWebSocketEvent,
     UpdateDoneStatusFamilyTaskEvent,
     UpdateDoneStatusOut,
@@ -153,6 +155,14 @@ class FamilyTaskService:
         await self._check_delete_permissions(family_task, user)
 
         await self.family_task_repository.delete(family_task)
+
+        await self._send_task_event(
+            user.id,
+            DeleteFamilyTaskEvent(
+                family_id=family_task.family_id,
+                data=DeleteFamilyTaskOut(id=family_task.id),
+            ),
+        )
 
     async def _check_delete_permissions(
         self,
