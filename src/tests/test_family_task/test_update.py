@@ -410,7 +410,7 @@ async def test_websocket_family_task_update_success(
 
     payload = {"identifier": user.email, "password": "password"}
     auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == 200
+    assert auth_response.status_code == status.HTTP_200_OK
     access_token = auth_response.json()["tokens"]["access_token"]
 
     async with aconnect_ws(
@@ -460,7 +460,7 @@ async def test_websocket_update_task_done_success(
 
     payload = {"identifier": user.email, "password": "password"}
     auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == 200
+    assert auth_response.status_code == status.HTTP_200_OK
     access_token = auth_response.json()["tokens"]["access_token"]
 
     async with aconnect_ws(
