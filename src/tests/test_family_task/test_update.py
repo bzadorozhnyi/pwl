@@ -9,6 +9,7 @@ from models.family_task import FamilyTask
 from tests.test_family_task.schemas_utils import (
     _assert_family_task_response_schema,
     _assert_websocket_family_task_update_event_response_schema,
+    _assert_websocket_task_update_done_status_response_schema,
 )
 
 
@@ -438,3 +439,51 @@ async def test_websocket_family_task_update_success(
         assert response["data"]["title"] == payload["title"]
 
         _assert_websocket_family_task_update_event_response_schema(response)
+
+
+@pytest.mark.anyio
+async def test_websocket_update_task_done_success(
+    async_client,
+    db_session,
+    user_factory,
+    family_factory,
+    family_member_factory,
+    family_task_factory,
+):
+    """Test WebSocket receives real-time done state update events on family tasks."""
+    user = user_factory()
+    family = family_factory()
+    family_member_factory(family_id=family.id, user_id=user.id)
+    family_task = family_task_factory(
+        family_id=family.id, creator_id=user.id, assignee_id=user.id, done=False
+    )
+
+    payload = {"identifier": user.email, "password": "password"}
+    auth_response = await async_client.post("/api/auth/token/", json=payload)
+    assert auth_response.status_code == 200
+    access_token = auth_response.json()["tokens"]["access_token"]
+
+    async with aconnect_ws(
+        "/api/ws/",
+        async_client,
+        headers={"Authorization": f"Bearer {access_token}"},
+    ) as ws:
+        update_payload = {"done": True}
+        response = await async_client.patch(
+            f"/api/tasks/{family_task.id}/done/",
+            json=update_payload,
+            headers={"authorization": f"Bearer {access_token}"},
+        )
+
+        family_task = await db_session.scalar(
+            select(FamilyTask).where(FamilyTask.creator_id == user.id)
+        )
+        response = await ws.receive_json()
+
+        assert family_task is not None
+        assert response["family_id"] == str(family.id)
+        assert response["event_type"] == "user_updated_task_done_status"
+        assert response["data"]["id"] == str(family_task.id)
+        assert response["data"]["done"] == update_payload["done"]
+
+        _assert_websocket_task_update_done_status_response_schema(response)

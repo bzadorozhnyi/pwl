@@ -14,6 +14,8 @@ from schemas.pagination import Paginated
 from schemas.ws.server import (
     CreateFamilyTaskEvent,
     ServerWebSocketEvent,
+    UpdateDoneStatusFamilyTaskEvent,
+    UpdateDoneStatusOut,
     UpdateFamilyTaskEvent,
 )
 from services.family import FamilyService, get_family_service
@@ -122,6 +124,14 @@ class FamilyTaskService:
 
         family_task.done = done
         await self.family_task_repository.update(family_task)
+
+        await self._send_task_event(
+            user_id,
+            UpdateDoneStatusFamilyTaskEvent(
+                family_id=family_task.family_id,
+                data=UpdateDoneStatusOut(id=family_task.id, done=family_task.done),
+            ),
+        )
 
     async def _check_update_done_permissions(
         self,

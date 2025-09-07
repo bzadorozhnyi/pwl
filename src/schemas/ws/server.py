@@ -26,4 +26,18 @@ class UpdateFamilyTaskEvent(BaseServerWebSocketEvent):
     data: FamilyTaskOut
 
 
-ServerWebSocketEvent = CreateFamilyTaskEvent | UpdateFamilyTaskEvent
+class UpdateDoneStatusOut(BaseModel):
+    id: uuid.UUID
+    done: bool
+
+
+class UpdateDoneStatusFamilyTaskEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_UPDATED_TASK_DONE_STATUS] = (
+        WebSocketServerEvent.USER_UPDATED_TASK_DONE_STATUS
+    )
+    data: UpdateDoneStatusOut
+
+
+ServerWebSocketEvent = (
+    CreateFamilyTaskEvent | UpdateFamilyTaskEvent | UpdateDoneStatusFamilyTaskEvent
+)
