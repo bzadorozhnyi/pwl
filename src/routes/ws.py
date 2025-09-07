@@ -19,9 +19,6 @@ async def websocket_endpoint(
         GroupMessageService, Depends(get_group_message_service)
     ],
 ):
-    # await websocket.accept()
-    # await websocket.send_text("Hello, WebSocket!")
-    # await websocket.close()
     if current_user is None:
         return
 
