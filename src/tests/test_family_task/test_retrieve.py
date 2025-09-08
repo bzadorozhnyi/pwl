@@ -9,6 +9,15 @@ from tests.test_family_task.schemas_utils import (
 
 
 @pytest.mark.anyio
+async def test_list_family_tasks_authentication_required(async_client, family_factory):
+    """Test that authentication is required to list family tasks."""
+    family = family_factory()
+
+    response = await async_client.get(f"/api/tasks/{family.id}/")
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.anyio
 async def test_list_family_tasks_success(
     async_client,
     user_factory,
