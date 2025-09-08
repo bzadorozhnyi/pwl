@@ -22,6 +22,19 @@ shopping_list_response_schema = {
     "additionalProperties": False,
 }
 
+# List of shopping lists schema
+shopping_list_list_response_schema = {
+    "type": "object",
+    "properties": {
+        "count": {"type": "integer"},
+        "next_page": {"type": ["string", "null"], "format": "uri"},
+        "previous_page": {"type": ["string", "null"], "format": "uri"},
+        "results": {"type": "array", "items": shopping_list_response_schema},
+    },
+    "required": ["count", "next_page", "previous_page", "results"],
+    "additionalProperties": False,
+}
+
 
 def _assert_shopping_list_response_schema(data):
     """Validate that the response matches the expected schema."""
@@ -29,3 +42,11 @@ def _assert_shopping_list_response_schema(data):
         jsonschema.validate(instance=data, schema=shopping_list_response_schema)
     except jsonschema.exceptions.ValidationError as e:
         pytest.fail(f"Response does not match schema: {e}")
+
+
+def _assert_shopping_list_list_response_schema(data):
+    """Validate that the list response matches the expected schema."""
+    try:
+        jsonschema.validate(instance=data, schema=shopping_list_list_response_schema)
+    except jsonschema.exceptions.ValidationError as e:
+        pytest.fail(f"List response does not match schema: {e}")

@@ -2,8 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 
+from core.pagination import Paginator
 from dependencies.auth import get_current_user
+from dependencies.pagination import get_paginator
 from models.user import User
+from schemas.pagination import Paginated
 from schemas.shopping_list import CreateShoppingListIn, ShoppingListOut
 from services.shopping_list import ShoppingListService, get_shopping_list_service
 
@@ -24,3 +27,22 @@ async def create_shopping_list(
     ],
 ):
     return await shopping_list_service.create_shopping_list(body, current_user.id)
+
+
+@router.get(
+    "/{family_id}/",
+    status_code=status.HTTP_200_OK,
+    response_model=Paginated[ShoppingListOut],
+    responses={403: {"description": "Forbidden: user is not a member of the family"}},
+)
+async def list_shopping_lists(
+    family_id: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    paginator: Annotated[Paginator, Depends(get_paginator)],
+    shopping_list_service: Annotated[
+        ShoppingListService, Depends(get_shopping_list_service)
+    ],
+):
+    return await shopping_list_service.list_shopping_lists(
+        current_user.id, family_id, paginator
+    )

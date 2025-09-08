@@ -3,12 +3,14 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from core.pagination import Paginator
 from exceptions import ForbiddenException
 from models.shopping_list import ShoppingList
 from repositories.shopping_list import (
     ShoppingListRepository,
     get_shopping_list_repository,
 )
+from schemas.pagination import Paginated
 from schemas.shopping_list import CreateShoppingListIn
 from services.family import FamilyService, get_family_service
 
@@ -39,6 +41,20 @@ class ShoppingListService:
         )
         if not is_creator_family_member:
             raise ForbiddenException("Creator is not member of family")
+
+    async def list_shopping_lists(
+        self, user_id: uuid.UUID, family_id: str, paginator: Paginator
+    ) -> Paginated[ShoppingList]:
+        await self._check_list_permissions(uuid.UUID(family_id), user_id)
+
+        return await self.shopping_list_repository.list_by_family_id(
+            uuid.UUID(family_id), paginator
+        )
+
+    async def _check_list_permissions(self, family_id: str, user_id: str):
+        is_family_member = await self.family_service.is_member(family_id, user_id)
+        if not is_family_member:
+            raise ForbiddenException("User is not member of family")
 
 
 def get_shopping_list_service(
