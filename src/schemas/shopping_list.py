@@ -12,6 +12,10 @@ class CreateShoppingListIn(BaseModel):
     family_id: uuid.UUID
 
 
+class UpdateShoppingListIn(BaseModel):
+    name: Annotated[str, Field(min_length=1)]
+
+
 class ShoppingListOut(CreateShoppingListIn):
     id: uuid.UUID
     creator: CreatorOut

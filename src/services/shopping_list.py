@@ -4,14 +4,14 @@ from typing import Annotated
 from fastapi import Depends
 
 from core.pagination import Paginator
-from exceptions import ForbiddenException
+from exceptions import ForbiddenException, NotFoundException
 from models.shopping_list import ShoppingList
 from repositories.shopping_list import (
     ShoppingListRepository,
     get_shopping_list_repository,
 )
 from schemas.pagination import Paginated
-from schemas.shopping_list import CreateShoppingListIn
+from schemas.shopping_list import CreateShoppingListIn, UpdateShoppingListIn
 from services.family import FamilyService, get_family_service
 
 
@@ -53,6 +53,35 @@ class ShoppingListService:
 
     async def _check_list_permissions(self, family_id: str, user_id: str):
         is_family_member = await self.family_service.is_member(family_id, user_id)
+        if not is_family_member:
+            raise ForbiddenException("User is not member of family")
+
+    async def update_shopping_list(
+        self,
+        shopping_list_id: str,
+        update_data: UpdateShoppingListIn,
+        user_id: uuid.UUID,
+    ) -> ShoppingList:
+        shopping_list = await self.shopping_list_repository.get_by_id(
+            uuid.UUID(shopping_list_id)
+        )
+        await self._check_update_permissions(shopping_list, user_id)
+
+        update_data = update_data.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(shopping_list, key, value)
+
+        return await self.shopping_list_repository.update(shopping_list)
+
+    async def _check_update_permissions(
+        self, shopping_list: ShoppingList, user_id: str
+    ):
+        if not shopping_list:
+            raise NotFoundException("Shopping list not found")
+
+        is_family_member = await self.family_service.is_member(
+            shopping_list.family_id, user_id
+        )
         if not is_family_member:
             raise ForbiddenException("User is not member of family")
 

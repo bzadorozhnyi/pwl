@@ -45,3 +45,11 @@ def shopping_list_create_payload_factory(
         family_id = factory.LazyAttribute(lambda o: family_factory().id)
 
     return ShoppingListCreatePayloadFactory
+
+
+@pytest.fixture
+def shopping_list_update_payload_factory():
+    class ShoppingListUpdatePayloadFactory(factory.DictFactory):
+        name = factory.Faker("sentence", nb_words=4)
+
+    return ShoppingListUpdatePayloadFactory
