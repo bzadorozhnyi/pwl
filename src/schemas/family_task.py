@@ -4,6 +4,8 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field
 
+from schemas.shared import AssigneeOut, CreatorOut
+
 
 class CreateFamilyTaskIn(BaseModel):
     family_id: uuid.UUID
@@ -19,22 +21,6 @@ class UpdateFamilyTaskIn(BaseModel):
 
 class UpdateDoneStatusFamilyTaskIn(BaseModel):
     done: bool
-
-
-class AssigneeOut(BaseModel):
-    id: uuid.UUID
-    first_name: str
-    last_name: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class CreatorOut(BaseModel):
-    id: uuid.UUID
-    first_name: str
-    last_name: str
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class FamilyTaskOut(BaseModel):
