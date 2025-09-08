@@ -10,8 +10,13 @@ from core.jwt import AuthJWTService, get_auth_jwt_service
 from core.logging import logger
 from exceptions import AuthorizationException, InputException, NotFoundException
 from models.family import Family, FamilyMember, FamilyRole
+from models.shopping_list import ShoppingList
 from models.user import User
 from repositories.family import FamilyRepository, get_family_repository
+from repositories.shopping_list import (
+    ShoppingListRepository,
+    get_shopping_list_repository,
+)
 from repositories.user import UserRepository, get_user_repository
 from schemas.token import TokenPairOut
 from schemas.user import (
@@ -30,11 +35,13 @@ class UserService:
         session: AsyncSession,
         user_repository: UserRepository,
         family_repository: FamilyRepository,
+        shopping_list_repository: ShoppingListRepository,
         auth_jwt_service: AuthJWTService,
     ):
         self.session = session
         self.user_repository = user_repository
         self.family_repository = family_repository
+        self.shopping_list_repository = shopping_list_repository
         self.auth_jwt_service = auth_jwt_service
 
     async def register(self, user_in: UserIn) -> UserWithTokensOut:
@@ -66,9 +73,16 @@ class UserService:
     async def _create_user_and_family(self, user_db: User) -> tuple[User, Family]:
         async with self.session.transaction():
             user = await self.user_repository.create(user_db)
+
             family = await self.family_repository.create()
             _family_member = await self.family_repository.add_member(
                 family_id=family.id, user_id=user.id, role=FamilyRole.ADMIN
+            )
+
+            _default_shopping_list = await self.shopping_list_repository.create(
+                ShoppingList(
+                    creator_id=user.id, family_id=family.id, name="Family Shopping List"
+                )
             )
 
         return user, family
@@ -152,6 +166,15 @@ def get_user_service(
     session: Annotated[AsyncSession, Depends(get_session)],
     user_repository: Annotated[UserRepository, Depends(get_user_repository)],
     family_repository: Annotated[FamilyRepository, Depends(get_family_repository)],
+    shopping_list_repository: Annotated[
+        ShoppingListRepository, Depends(get_shopping_list_repository)
+    ],
     auth_jwt_service: Annotated[AuthJWTService, Depends(get_auth_jwt_service)],
 ) -> UserService:
-    return UserService(session, user_repository, family_repository, auth_jwt_service)
+    return UserService(
+        session,
+        user_repository,
+        family_repository,
+        shopping_list_repository,
+        auth_jwt_service,
+    )

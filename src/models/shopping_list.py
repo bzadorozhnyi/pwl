@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class ShoppingList(SQLModel, table=True):
@@ -12,6 +12,13 @@ class ShoppingList(SQLModel, table=True):
 
     created_at: datetime = Field(default_factory=datetime.now, nullable=False)
     updated_at: datetime = Field(default_factory=datetime.now, nullable=False)
+
+    creator: "User" = Relationship(  # noqa: F821
+        sa_relationship_kwargs={
+            "foreign_keys": "ShoppingList.creator_id",
+            "lazy": "selectin",
+        },
+    )
 
 
 class ShoppingListItem(SQLModel, table=True):

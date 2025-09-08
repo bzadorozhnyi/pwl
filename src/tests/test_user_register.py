@@ -4,6 +4,7 @@ from fastapi import status
 from sqlmodel import select
 
 from models.family import FamilyMember, FamilyRole
+from models.shopping_list import ShoppingList
 from models.user import User
 
 user_register_response_schema = {
@@ -71,6 +72,14 @@ async def test_user_register_success(
     assert family_member is not None
     assert family_member.user_id == user.id
     assert family_member.role == FamilyRole.ADMIN
+
+    shopping_list = await db_session.scalar(
+        select(ShoppingList).where(ShoppingList.creator_id == user.id)
+    )
+    assert shopping_list is not None
+    assert shopping_list.creator_id == user.id
+    assert shopping_list.family_id == family_member.family_id
+    assert shopping_list.name == "Family Shopping List"
 
     _assert_user_register_response_schema(response.json())
 
