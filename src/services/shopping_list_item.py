@@ -31,7 +31,7 @@ class ShoppingListItemService:
 
     async def create_shopping_list_item(
         self, item_data: CreateShoppingListItemIn, user_id: uuid.UUID
-    ):
+    ) -> ShoppingListItem:
         await self._check_create_permissions(item_data, user_id)
 
         item = ShoppingListItem(**item_data.model_dump(), creator_id=user_id)
