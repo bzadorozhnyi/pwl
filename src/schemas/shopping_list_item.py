@@ -12,7 +12,7 @@ class CreateShoppingListItemIn(BaseModel):
     name: Annotated[str, Field(min_length=1)]
 
 
-class ShoppingListItemOut(CreateShoppingListItemIn):
+class ShoppingListItemOut(BaseModel):
     id: uuid.UUID
     creator: CreatorOut
     shopping_list_id: uuid.UUID
