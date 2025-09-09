@@ -7,7 +7,11 @@ from dependencies.auth import get_current_user
 from dependencies.pagination import get_paginator
 from models.user import User
 from schemas.pagination import Paginated
-from schemas.shopping_list import CreateShoppingListIn, ShoppingListOut
+from schemas.shopping_list import (
+    CreateShoppingListIn,
+    ShoppingListOut,
+    UpdateShoppingListIn,
+)
 from services.shopping_list import ShoppingListService, get_shopping_list_service
 
 router = APIRouter(prefix="/shopping-lists", tags=["shopping-lists"])
@@ -45,4 +49,26 @@ async def list_shopping_lists(
 ):
     return await shopping_list_service.list_shopping_lists(
         current_user.id, family_id, paginator
+    )
+
+
+@router.put(
+    "/{shopping_list_id}/",
+    status_code=status.HTTP_200_OK,
+    response_model=ShoppingListOut,
+    responses={
+        403: {"description": "Forbidden: user is not a member of the family"},
+        404: {"description": "Not Found: shopping list does not exist"},
+    },
+)
+async def update_shopping_list(
+    shopping_list_id: str,
+    body: UpdateShoppingListIn,
+    current_user: Annotated[User, Depends(get_current_user)],
+    shopping_list_service: Annotated[
+        ShoppingListService, Depends(get_shopping_list_service)
+    ],
+):
+    return await shopping_list_service.update_shopping_list(
+        shopping_list_id, body, current_user.id
     )

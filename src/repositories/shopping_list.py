@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends
@@ -16,6 +17,20 @@ class ShoppingListRepository:
         self.session = session
 
     async def create(self, shopping_list: ShoppingList):
+        self.session.add(shopping_list)
+        await self.session.commit()
+        await self.session.refresh(shopping_list)
+
+        return shopping_list
+
+    async def get_by_id(self, id: uuid.UUID) -> ShoppingList | None:
+        statement = select(ShoppingList).where(ShoppingList.id == id)
+
+        return await self.session.scalar(statement)
+
+    async def update(self, shopping_list: ShoppingList):
+        shopping_list.updated_at = datetime.now()
+
         self.session.add(shopping_list)
         await self.session.commit()
         await self.session.refresh(shopping_list)
