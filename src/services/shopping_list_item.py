@@ -34,9 +34,7 @@ class ShoppingListItemService:
     ):
         await self._check_create_permissions(item_data, user_id)
 
-        item = ShoppingListItem(
-            **item_data.model_dump(exclude_none=True), creator_id=user_id
-        )
+        item = ShoppingListItem(**item_data.model_dump(), creator_id=user_id)
         return await self.shopping_list_item_repository.create(item)
 
     async def _check_create_permissions(
@@ -45,7 +43,6 @@ class ShoppingListItemService:
         shopping_list = await self.shopping_list_repository.get_by_id(
             item_data.shopping_list_id
         )
-        print("shopping_list", item_data.shopping_list_id, shopping_list)
         if shopping_list is None:
             raise NotFoundException("Shopping list not found")
 
