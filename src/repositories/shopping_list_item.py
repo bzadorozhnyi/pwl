@@ -2,12 +2,13 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import and_, select
 
 from core.db import get_session
 from core.pagination import Paginator
 from models.shopping_list_item import ShoppingListItem
 from schemas.pagination import Paginated
+from schemas.shopping_list_item import ShoppingListItemFilter
 
 
 class ShoppingListItemRepository:
@@ -24,13 +25,31 @@ class ShoppingListItemRepository:
     async def get_all_by_shopping_list_id(
         self,
         shopping_list_id: str,
+        filters: ShoppingListItemFilter,
         paginator: Paginator,
     ) -> Paginated[ShoppingListItem]:
-        return await paginator.paginate(
-            select(ShoppingListItem).where(
-                ShoppingListItem.shopping_list_id == shopping_list_id
-            )
+        statement = select(ShoppingListItem).where(
+            ShoppingListItem.shopping_list_id == shopping_list_id
         )
+
+        if filters.name:
+            words = filters.name.split()
+            name_conditions = [
+                ShoppingListItem.name.ilike(f"%{word}%") for word in words
+            ]
+            statement = statement.where(and_(*name_conditions))
+
+        if filters.created_from:
+            statement = statement.where(
+                ShoppingListItem.created_at >= filters.created_from
+            )
+
+        if filters.created_to:
+            statement = statement.where(
+                ShoppingListItem.created_at <= filters.created_to
+            )
+
+        return await paginator.paginate(statement)
 
 
 def get_shopping_list_item_repository(

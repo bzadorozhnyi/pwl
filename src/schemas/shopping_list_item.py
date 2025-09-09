@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict
@@ -20,3 +21,9 @@ class ShoppingListItemOut(BaseModel):
     name: Annotated[str, Field(min_length=1)]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ShoppingListItemFilter(BaseModel):
+    name: Annotated[str | None, Field(max_length=100)] = None
+    created_from: datetime | None = None
+    created_to: datetime | None = None
