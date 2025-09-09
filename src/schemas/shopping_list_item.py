@@ -7,19 +7,16 @@ from sqlmodel import Field
 from schemas.shared import CreatorOut
 
 
-class CreateShoppingListIn(BaseModel):
-    name: Annotated[str, Field(min_length=1)]
-    family_id: uuid.UUID
-
-
-class UpdateShoppingListIn(BaseModel):
+class CreateShoppingListItemIn(BaseModel):
+    shopping_list_id: uuid.UUID
     name: Annotated[str, Field(min_length=1)]
 
 
-class ShoppingListOut(BaseModel):
+class ShoppingListItemOut(BaseModel):
     id: uuid.UUID
     creator: CreatorOut
-    family_id: uuid.UUID
+    shopping_list_id: uuid.UUID
+    purchased: bool
     name: Annotated[str, Field(min_length=1)]
 
     model_config = ConfigDict(from_attributes=True)
