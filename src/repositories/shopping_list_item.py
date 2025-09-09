@@ -34,6 +34,11 @@ class ShoppingListItemRepository:
             ShoppingListItem.shopping_list_id == shopping_list_id
         )
 
+        statement = self._apply_shopping_list_item_filters(statement, filters)
+
+        return await paginator.paginate(statement)
+
+    def _apply_shopping_list_item_filters(self, statement, filters):
         if filters.name:
             words = filters.name.split()
             name_conditions = [
@@ -51,7 +56,7 @@ class ShoppingListItemRepository:
                 ShoppingListItem.created_at <= filters.created_to
             )
 
-        return await paginator.paginate(statement)
+        return statement
 
     async def get_by_id(self, id: uuid.UUID) -> ShoppingListItem | None:
         statement = select(ShoppingListItem).where(ShoppingListItem.id == id)
