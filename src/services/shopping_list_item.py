@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi.params import Depends
 
 from core.pagination import Paginator
-from exceptions import ForbiddenException, NotFoundException
+from exceptions import ForbiddenException, InputException, NotFoundException
 from models.shopping_list_item import ShoppingListItem
 from repositories.shopping_list import (
     ShoppingListRepository,
@@ -15,7 +15,7 @@ from repositories.shopping_list_item import (
     get_shopping_list_item_repository,
 )
 from schemas.pagination import Paginated
-from schemas.shopping_list_item import CreateShoppingListItemIn
+from schemas.shopping_list_item import CreateShoppingListItemIn, ShoppingListItemFilter
 from services.family import FamilyService, get_family_service
 
 
@@ -61,18 +61,19 @@ class ShoppingListItemService:
         self,
         shopping_list_id: str,
         user_id: uuid.UUID,
+        filters: ShoppingListItemFilter,
         paginator: Paginator,
     ) -> Paginated[ShoppingListItem]:
         await self._check_get_all_shopping_list_items_permissions(
-            shopping_list_id, user_id
+            shopping_list_id, user_id, filters
         )
 
         return await self.shopping_list_item_repository.get_all_by_shopping_list_id(
-            shopping_list_id, paginator
+            shopping_list_id, filters, paginator
         )
 
     async def _check_get_all_shopping_list_items_permissions(
-        self, shopping_list_id: str, user_id: uuid.UUID
+        self, shopping_list_id: str, user_id: uuid.UUID, filters: ShoppingListItemFilter
     ):
         shopping_list = await self.shopping_list_repository.get_by_id(shopping_list_id)
         if shopping_list is None:
@@ -86,6 +87,9 @@ class ShoppingListItemService:
             raise ForbiddenException(
                 "User is not allowed to view items of this shopping list"
             )
+
+        if filters.name and len(filters.name.split()) > 10:
+            raise InputException("Too many words in search filter")
 
 
 def get_shopping_list_item_service(

@@ -12,7 +12,7 @@ from schemas.shopping_list import (
     ShoppingListOut,
     UpdateShoppingListIn,
 )
-from schemas.shopping_list_item import ShoppingListItemOut
+from schemas.shopping_list_item import ShoppingListItemFilter, ShoppingListItemOut
 from services.shopping_list import ShoppingListService, get_shopping_list_service
 from services.shopping_list_item import (
     ShoppingListItemService,
@@ -62,6 +62,7 @@ async def list_shopping_lists(
     status_code=status.HTTP_200_OK,
     response_model=Paginated[ShoppingListItemOut],
     responses={
+        400: {"description": "Bad Request: invalid filter parameters"},
         403: {"description": "Forbidden: user is not a member of the family"},
         404: {"description": "Shopping list not found"},
     },
@@ -69,13 +70,14 @@ async def list_shopping_lists(
 async def get_all_shopping_list_items(
     shopping_list_id: str,
     current_user: Annotated[User, Depends(get_current_user)],
+    filters: Annotated[ShoppingListItemFilter, Depends()],
     paginator: Annotated[Paginator, Depends(get_paginator)],
     shopping_list_item_service: Annotated[
         ShoppingListItemService, Depends(get_shopping_list_item_service)
     ],
 ):
     return await shopping_list_item_service.get_all_shopping_list_items(
-        shopping_list_id, current_user.id, paginator
+        shopping_list_id, current_user.id, filters, paginator
     )
 
 
