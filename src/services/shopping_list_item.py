@@ -15,7 +15,11 @@ from repositories.shopping_list_item import (
     get_shopping_list_item_repository,
 )
 from schemas.pagination import Paginated
-from schemas.shopping_list_item import CreateShoppingListItemIn, ShoppingListItemFilter
+from schemas.shopping_list_item import (
+    CreateShoppingListItemIn,
+    ShoppingListItemFilter,
+    UpdatePurchasedStatusShoppingListItemIn,
+)
 from services.family import FamilyService, get_family_service
 
 
@@ -90,6 +94,39 @@ class ShoppingListItemService:
 
         if filters.name and len(filters.name.split()) > 10:
             raise InputException("Too many words in search filter")
+
+    async def update_shopping_list_item_purchase_status(
+        self,
+        item_id: str,
+        body: UpdatePurchasedStatusShoppingListItemIn,
+        user_id: uuid.UUID,
+    ) -> None:
+        item = await self.shopping_list_item_repository.get_by_id(uuid.UUID(item_id))
+        await self._check_update_permissions(item, user_id)
+
+        item.purchased = body.purchased
+        await self.shopping_list_item_repository.update(item)
+
+    async def _check_update_permissions(
+        self, item: ShoppingListItem, user_id: uuid.UUID
+    ):
+        if item is None:
+            raise NotFoundException("Shopping list item not found")
+
+        shopping_list = await self.shopping_list_repository.get_by_id(
+            item.shopping_list_id
+        )
+        if shopping_list is None:
+            raise NotFoundException("Shopping list not found")
+
+        is_family_member = await self.family_service.is_member(
+            shopping_list.family_id, user_id
+        )
+
+        if not is_family_member:
+            raise ForbiddenException(
+                "User is not allowed to update items of this shopping list"
+            )
 
 
 def get_shopping_list_item_service(

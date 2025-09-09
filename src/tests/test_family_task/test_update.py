@@ -73,7 +73,7 @@ async def test_cannot_update_nonexisting_task(
 
     update_data = family_task_update_payload_factory()
     response = await async_client.put(
-        f"/api/tasks/{str(uuid.uuid4())}/",
+        f"/api/tasks/{uuid.uuid4()}/",
         json=update_data,
         headers={"authorization": f"Bearer {access_token}"},
     )
@@ -301,7 +301,7 @@ async def test_update_task_done_not_found(
 
     update_data = {"done": True}
     response = await async_client.patch(
-        f"/api/tasks/{str(uuid.uuid4())}/done/",
+        f"/api/tasks/{uuid.uuid4()}/done/",
         json=update_data,
         headers={"authorization": f"Bearer {access_token}"},
     )
