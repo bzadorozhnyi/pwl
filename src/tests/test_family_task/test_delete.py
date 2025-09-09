@@ -32,7 +32,7 @@ async def test_delete_family_task_by_creator_success(
     access_token = auth_response.json()["tokens"]["access_token"]
 
     response = await async_client.delete(
-        f"/api/tasks/{str(family_task.id)}/",
+        f"/api/tasks/{family_task.id}/",
         headers={"authorization": f"Bearer {access_token}"},
     )
 
@@ -68,7 +68,7 @@ async def test_delete_family_task_by_admin_success(
     access_token = auth_response.json()["tokens"]["access_token"]
 
     response = await async_client.delete(
-        f"/api/tasks/{str(family_task.id)}/",
+        f"/api/tasks/{family_task.id}/",
         headers={"authorization": f"Bearer {access_token}"},
     )
 
@@ -81,7 +81,7 @@ async def test_delete_family_task_by_admin_success(
 
 
 @pytest.mark.anyio
-async def test_delete_family_task_not_found(async_client, db_session, user_factory):
+async def test_delete_family_task_not_found(async_client, user_factory):
     """Test that deleting a non-existent family task returns 404."""
     user = user_factory()
     payload = {"identifier": user.email, "password": "password"}
@@ -89,7 +89,7 @@ async def test_delete_family_task_not_found(async_client, db_session, user_facto
     access_token = auth_response.json()["tokens"]["access_token"]
 
     response = await async_client.delete(
-        f"/api/tasks/{str(uuid.uuid4())}/",
+        f"/api/tasks/{uuid.uuid4()}/",
         headers={"authorization": f"Bearer {access_token}"},
     )
 
@@ -121,7 +121,7 @@ async def test_cannot_delete_family_task_by_non_family_member(
     access_token = auth_response.json()["tokens"]["access_token"]
 
     response = await async_client.delete(
-        f"/api/tasks/{str(family_task.id)}/",
+        f"/api/tasks/{family_task.id}/",
         headers={"authorization": f"Bearer {access_token}"},
     )
 
@@ -163,7 +163,7 @@ async def test_cannot_delete_family_task_by_non_family_admin(
     access_token = auth_response.json()["tokens"]["access_token"]
 
     response = await async_client.delete(
-        f"/api/tasks/{str(family_task.id)}/",
+        f"/api/tasks/{family_task.id}/",
         headers={"authorization": f"Bearer {access_token}"},
     )
 
@@ -201,7 +201,7 @@ async def test_cannot_delete_family_task_by_assignee(
     access_token = auth_response.json()["tokens"]["access_token"]
 
     response = await async_client.delete(
-        f"/api/tasks/{str(family_task.id)}/",
+        f"/api/tasks/{family_task.id}/",
         headers={"authorization": f"Bearer {access_token}"},
     )
 

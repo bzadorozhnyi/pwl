@@ -44,6 +44,10 @@ class ShoppingListRepository:
             select(ShoppingList).where(ShoppingList.family_id == family_id)
         )
 
+    async def delete(self, shopping_list: ShoppingList):
+        await self.session.delete(shopping_list)
+        await self.session.commit()
+
 
 def get_shopping_list_repository(
     session: Annotated[AsyncSession, Depends(get_session)],

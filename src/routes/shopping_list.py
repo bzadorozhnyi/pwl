@@ -72,3 +72,21 @@ async def update_shopping_list(
     return await shopping_list_service.update_shopping_list(
         shopping_list_id, body, current_user.id
     )
+
+
+@router.delete(
+    "/{shopping_list_id}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        403: {"description": "Forbidden: user is not a member of the family"},
+        404: {"description": "Not Found: shopping list does not exist"},
+    },
+)
+async def delete_shopping_list(
+    shopping_list_id: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+    shopping_list_service: Annotated[
+        ShoppingListService, Depends(get_shopping_list_service)
+    ],
+):
+    await shopping_list_service.delete_shopping_list(shopping_list_id, current_user.id)

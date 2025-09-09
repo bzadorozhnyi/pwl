@@ -85,6 +85,26 @@ class ShoppingListService:
         if not is_family_member:
             raise ForbiddenException("User is not member of family")
 
+    async def delete_shopping_list(self, shopping_list_id: str, user_id: uuid.UUID):
+        shopping_list = await self.shopping_list_repository.get_by_id(
+            uuid.UUID(shopping_list_id)
+        )
+        await self._check_delete_permissions(shopping_list, user_id)
+
+        await self.shopping_list_repository.delete(shopping_list)
+
+    async def _check_delete_permissions(
+        self, shopping_list: ShoppingList, user_id: str
+    ):
+        if not shopping_list:
+            raise NotFoundException("Shopping list not found")
+
+        is_family_member = await self.family_service.is_member(
+            shopping_list.family_id, user_id
+        )
+        if not is_family_member:
+            raise ForbiddenException("User is not member of family")
+
 
 def get_shopping_list_service(
     shopping_list_repository: Annotated[
