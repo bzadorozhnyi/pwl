@@ -13,6 +13,10 @@ class CreateShoppingListItemIn(BaseModel):
     name: Annotated[str, Field(min_length=1)]
 
 
+class UpdatePurchasedStatusShoppingListItemIn(BaseModel):
+    purchased: bool
+
+
 class ShoppingListItemOut(BaseModel):
     id: uuid.UUID
     creator: CreatorOut

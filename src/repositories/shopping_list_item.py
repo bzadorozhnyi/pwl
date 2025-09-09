@@ -1,3 +1,5 @@
+import uuid
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends
@@ -50,6 +52,20 @@ class ShoppingListItemRepository:
             )
 
         return await paginator.paginate(statement)
+
+    async def get_by_id(self, id: uuid.UUID) -> ShoppingListItem | None:
+        statement = select(ShoppingListItem).where(ShoppingListItem.id == id)
+
+        return await self.session.scalar(statement)
+
+    async def update(self, shopping_list_item: ShoppingListItem) -> ShoppingListItem:
+        shopping_list_item.updated_at = datetime.now()
+
+        self.session.add(shopping_list_item)
+        await self.session.commit()
+        await self.session.refresh(shopping_list_item)
+
+        return shopping_list_item
 
 
 def get_shopping_list_item_repository(
