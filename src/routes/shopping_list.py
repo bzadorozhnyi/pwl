@@ -58,7 +58,7 @@ async def list_shopping_lists(
 
 
 @router.get(
-    "/{shopping_list_id}/items",
+    "/{shopping_list_id}/items/",
     status_code=status.HTTP_200_OK,
     response_model=Paginated[ShoppingListItemOut],
     responses={

@@ -16,7 +16,7 @@ async def test_retrieve_all_shopping_list_items_authentication_required(
     """Test that authentication is required to retrieve all shopping list items."""
     shopping_list = shopping_list_factory()
 
-    response = await async_client.get(f"/api/shopping-lists/{shopping_list.id}/items")
+    response = await async_client.get(f"/api/shopping-lists/{shopping_list.id}/items/")
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -40,7 +40,7 @@ async def test_list_shopping_list_items_nonexistent_shopping_list_returns_404(
     assert access_token is not None
 
     response = await async_client.get(
-        f"/api/shopping-lists/{uuid.uuid4()}/items",
+        f"/api/shopping-lists/{uuid.uuid4()}/items/",
         headers={"authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -74,7 +74,7 @@ async def test_list_shopping_list_items_success(
     assert access_token is not None
 
     response = await async_client.get(
-        f"/api/shopping-lists/{shopping_list.id}/items",
+        f"/api/shopping-lists/{shopping_list.id}/items/",
         headers={"authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -127,7 +127,7 @@ async def test_cannot_list_items_from_other_family_shopping_list(
     assert access_token is not None
 
     response = await async_client.get(
-        f"/api/shopping-lists/{shopping_list_other_family.id}/items",
+        f"/api/shopping-lists/{shopping_list_other_family.id}/items/",
         headers={"authorization": f"Bearer {access_token}"},
     )
 
@@ -161,7 +161,7 @@ async def test_paginated_list_shopping_list_items_multiple_pages(
     headers = {"authorization": f"Bearer {access_token}"}
 
     response = await async_client.get(
-        f"/api/shopping-lists/{shopping_list.id}/items?page=1&page_size=10",
+        f"/api/shopping-lists/{shopping_list.id}/items/?page=1&page_size=10",
         headers=headers,
     )
     assert response.status_code == status.HTTP_200_OK
