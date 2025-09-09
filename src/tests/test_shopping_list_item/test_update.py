@@ -119,4 +119,4 @@ async def test_update_shopping_list_item_purchase_only_family_member_can_update(
     updated_item = await db_session.scalar(
         select(ShoppingListItem).where(ShoppingListItem.id == item.id)
     )
-    assert updated_item.purchased is False # remain the same
+    assert updated_item.purchased is False  # remain the same

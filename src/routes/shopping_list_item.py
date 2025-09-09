@@ -44,7 +44,7 @@ async def create_shopping_list_item(
     responses={
         403: {"description": "Forbidden: user is not a member of the family"},
         404: {"description": "Shopping list item not found"},
-    }
+    },
 )
 async def update_shopping_list_item_purchase_status(
     item_id: str,
