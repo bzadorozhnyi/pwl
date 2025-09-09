@@ -4,7 +4,10 @@ from fastapi import APIRouter, Depends, status
 
 from dependencies.auth import get_current_user
 from models.user import User
-from schemas.shopping_list_item import CreateShoppingListItemIn, ShoppingListItemOut
+from schemas.shopping_list_item import (
+    CreateShoppingListItemIn,
+    ShoppingListItemOut,
+)
 from services.shopping_list_item import (
     ShoppingListItemService,
     get_shopping_list_item_service,

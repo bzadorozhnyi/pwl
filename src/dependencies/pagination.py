@@ -16,4 +16,12 @@ def get_paginator(
     page_size: int = Query(10, ge=1, le=100),
 ) -> Paginator:
     base_url = urljoin(str(request.base_url), request.url.path)
-    return Paginator(session=session, base_url=base_url, page=page, page_size=page_size)
+    query_params = dict(request.query_params)
+
+    return Paginator(
+        session=session,
+        base_url=base_url,
+        page=page,
+        page_size=page_size,
+        query_params=query_params,
+    )
