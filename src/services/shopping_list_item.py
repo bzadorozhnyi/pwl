@@ -22,6 +22,8 @@ from schemas.shopping_list_item import (
 )
 from schemas.ws.server import (
     CreateShoppingListItemEvent,
+    DeleteShoppingListItemEvent,
+    DeleteShoppingListItemOut,
     ServerWebSocketEvent,
     UpdatePurchasedStatusOut,
     UpdatePurchasedStatusShoppingListItemEvent,
@@ -161,6 +163,14 @@ class ShoppingListItemService:
         await self._check_delete_permissions(item, user_id)
 
         await self.shopping_list_item_repository.delete(item)
+
+        await self._send_task_event(
+            user_id,
+            DeleteShoppingListItemEvent(
+                family_id=item.shopping_list.family_id,
+                data=DeleteShoppingListItemOut(id=item.id),
+            ),
+        )
 
     async def _check_delete_permissions(
         self, item: ShoppingListItem, user_id: uuid.UUID

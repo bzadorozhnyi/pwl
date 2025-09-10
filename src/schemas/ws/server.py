@@ -95,6 +95,17 @@ class UpdatePurchasedStatusShoppingListItemEvent(BaseServerWebSocketEvent):
     data: UpdatePurchasedStatusOut
 
 
+class DeleteShoppingListItemOut(BaseModel):
+    id: uuid.UUID
+
+
+class DeleteShoppingListItemEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_DELETED_SHOPPING_LIST_ITEM] = (
+        WebSocketServerEvent.USER_DELETED_SHOPPING_LIST_ITEM
+    )
+    data: DeleteShoppingListItemOut
+
+
 ServerWebSocketEvent = (
     CreateFamilyTaskEvent
     | UpdateFamilyTaskEvent
@@ -105,4 +116,5 @@ ServerWebSocketEvent = (
     | DeleteShoppingListEvent
     | CreateShoppingListItemEvent
     | UpdatePurchasedStatusShoppingListItemEvent
+    | DeleteShoppingListItemEvent
 )
