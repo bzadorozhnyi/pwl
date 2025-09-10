@@ -6,6 +6,7 @@ from fastapi import Depends
 from core.pagination import Paginator
 from exceptions import ForbiddenException, NotFoundException
 from models.shopping_list import ShoppingList
+from models.user import User
 from repositories.shopping_list import (
     ShoppingListRepository,
     get_shopping_list_repository,
@@ -14,6 +15,8 @@ from schemas.pagination import Paginated
 from schemas.shopping_list import CreateShoppingListIn, UpdateShoppingListIn
 from schemas.ws.server import (
     CreateShoppingListEvent,
+    DeleteShoppingListEvent,
+    DeleteShoppingListOut,
     ServerWebSocketEvent,
     UpdateShoppingListEvent,
 )
@@ -114,13 +117,21 @@ class ShoppingListService:
         if not is_family_member:
             raise ForbiddenException("User is not member of family")
 
-    async def delete_shopping_list(self, shopping_list_id: str, user_id: uuid.UUID):
+    async def delete_shopping_list(self, shopping_list_id: str, user: User):
         shopping_list = await self.shopping_list_repository.get_by_id(
             uuid.UUID(shopping_list_id)
         )
-        await self._check_delete_permissions(shopping_list, user_id)
+        await self._check_delete_permissions(shopping_list, user.id)
 
         await self.shopping_list_repository.delete(shopping_list)
+
+        await self._send_task_event(
+            user.id,
+            DeleteShoppingListEvent(
+                family_id=shopping_list.family_id,
+                data=DeleteShoppingListOut(id=shopping_list.id),
+            ),
+        )
 
     async def _check_delete_permissions(
         self, shopping_list: ShoppingList, user_id: str
