@@ -83,6 +83,18 @@ class CreateShoppingListItemEvent(BaseServerWebSocketEvent):
     data: ShoppingListItemOut
 
 
+class UpdatePurchasedStatusOut(BaseModel):
+    id: uuid.UUID
+    purchased: bool
+
+
+class UpdatePurchasedStatusShoppingListItemEvent(BaseServerWebSocketEvent):
+    event_type: Literal[
+        WebSocketServerEvent.USER_UPDATED_SHOPPING_LIST_ITEM_PURCHASED_STATUS
+    ] = WebSocketServerEvent.USER_UPDATED_SHOPPING_LIST_ITEM_PURCHASED_STATUS
+    data: UpdatePurchasedStatusOut
+
+
 ServerWebSocketEvent = (
     CreateFamilyTaskEvent
     | UpdateFamilyTaskEvent
@@ -91,4 +103,6 @@ ServerWebSocketEvent = (
     | CreateShoppingListEvent
     | UpdateShoppingListEvent
     | DeleteShoppingListEvent
+    | CreateShoppingListItemEvent
+    | UpdatePurchasedStatusShoppingListItemEvent
 )

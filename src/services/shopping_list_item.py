@@ -20,7 +20,12 @@ from schemas.shopping_list_item import (
     ShoppingListItemFilter,
     UpdatePurchasedStatusShoppingListItemIn,
 )
-from schemas.ws.server import CreateShoppingListItemEvent, ServerWebSocketEvent
+from schemas.ws.server import (
+    CreateShoppingListItemEvent,
+    ServerWebSocketEvent,
+    UpdatePurchasedStatusOut,
+    UpdatePurchasedStatusShoppingListItemEvent,
+)
 from services.family import FamilyService, get_family_service
 from services.group_message import GroupMessageService, get_group_message_service
 
@@ -121,6 +126,14 @@ class ShoppingListItemService:
 
         item.purchased = body.purchased
         await self.shopping_list_item_repository.update(item)
+
+        await self._send_task_event(
+            user_id,
+            UpdatePurchasedStatusShoppingListItemEvent(
+                family_id=item.shopping_list.family_id,
+                data=UpdatePurchasedStatusOut(id=item.id, purchased=item.purchased),
+            ),
+        )
 
     async def _check_update_permissions(
         self, item: ShoppingListItem, user_id: uuid.UUID

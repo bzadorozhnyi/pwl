@@ -2,10 +2,14 @@ import uuid
 
 import pytest
 from fastapi import status
+from httpx_ws import aconnect_ws
 from sqlmodel import select
 
 from models.shopping_list_item import ShoppingListItem
 from tests.utils import get_access_token
+from tests.test_shopping_list_item.schemas_utils import (
+    _assert_websocket_update_purchased_status_response_schema,
+)
 
 
 @pytest.mark.anyio
@@ -113,3 +117,57 @@ async def test_update_shopping_list_item_purchase_only_family_member_can_update(
         select(ShoppingListItem).where(ShoppingListItem.id == item.id)
     )
     assert updated_item.purchased is False  # remain the same
+
+
+@pytest.mark.anyio
+async def test_websocket_update_shopping_list_item_purchased_success(
+    async_client,
+    db_session,
+    user_factory,
+    family_factory,
+    family_member_factory,
+    shopping_list_factory,
+    shopping_list_item_factory,
+):
+    """Test WebSocket receives real-time purchased state update events on shopping list items."""
+    user = user_factory()
+    family = family_factory()
+    family_member_factory(family_id=family.id, user_id=user.id)
+    shopping_list = shopping_list_factory(family_id=family.id)
+    item = shopping_list_item_factory(
+        family_id=family.id,
+        shopping_list_id=shopping_list.id,
+        purchased=False,
+    )
+
+    payload = {"identifier": user.email, "password": "password"}
+    auth_response = await async_client.post("/api/auth/token/", json=payload)
+    assert auth_response.status_code == status.HTTP_200_OK
+    access_token = auth_response.json()["tokens"]["access_token"]
+
+    async with aconnect_ws(
+        "/api/ws/",
+        async_client,
+        headers={"Authorization": f"Bearer {access_token}"},
+    ) as ws:
+        update_payload = {"purchased": True}
+        response = await async_client.patch(
+            f"/api/shopping-list-items/{item.id}/purchased/",
+            json=update_payload,
+            headers={"authorization": f"Bearer {access_token}"},
+        )
+
+        updated_item = await db_session.scalar(
+            select(ShoppingListItem).where(ShoppingListItem.id == item.id)
+        )
+        response = await ws.receive_json()
+
+        assert updated_item is not None
+        assert updated_item.purchased == update_payload["purchased"]
+        assert (
+            response["event_type"] == "user_updated_shopping_list_item_purchased_status"
+        )
+        assert response["data"]["id"] == str(item.id)
+        assert response["data"]["purchased"] == update_payload["purchased"]
+
+        _assert_websocket_update_purchased_status_response_schema(response)

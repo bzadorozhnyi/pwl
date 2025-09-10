@@ -46,6 +46,25 @@ websocket_shopping_list_item_create_response_schema = {
     "additionalProperties": False,
 }
 
+websocket_shopping_list_item_update_purchased_status_response_schema = {
+    "type": "object",
+    "properties": {
+        "family_id": {"type": "string", "format": "uuid"},
+        "event_type": {"const": "user_updated_shopping_list_item_purchased_status"},
+        "data": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "string", "format": "uuid"},
+                "purchased": {"type": "boolean"},
+            },
+            "required": ["id", "purchased"],
+            "additionalProperties": False,
+        },
+    },
+    "required": ["family_id", "event_type", "data"],
+    "additionalProperties": False,
+}
+
 
 def _assert_shopping_list_item_response_schema(data):
     """Validate that the response matches the expected schema."""
@@ -70,6 +89,17 @@ def _assert_websocket_shopping_list_item_create_response_schema(data):
     try:
         jsonschema.validate(
             instance=data, schema=websocket_shopping_list_item_create_response_schema
+        )
+    except jsonschema.exceptions.ValidationError as e:
+        pytest.fail(f"WebSocket response does not match schema: {e}")
+
+
+def _assert_websocket_update_purchased_status_response_schema(data):
+    """Validate that the WebSocket response for shopping list item purchased status update matches the expected schema."""
+    try:
+        jsonschema.validate(
+            instance=data,
+            schema=websocket_shopping_list_item_update_purchased_status_response_schema,
         )
     except jsonschema.exceptions.ValidationError as e:
         pytest.fail(f"WebSocket response does not match schema: {e}")
