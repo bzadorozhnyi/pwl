@@ -72,6 +72,10 @@ class ShoppingListItemRepository:
 
         return shopping_list_item
 
+    async def delete(self, shopping_list_item: ShoppingListItem) -> None:
+        await self.session.delete(shopping_list_item)
+        await self.session.commit()
+
 
 def get_shopping_list_item_repository(
     session: Annotated[AsyncSession, Depends(get_session)],

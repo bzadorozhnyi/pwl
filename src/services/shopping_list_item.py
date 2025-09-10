@@ -128,6 +128,33 @@ class ShoppingListItemService:
                 "User is not allowed to update items of this shopping list"
             )
 
+    async def delete_shopping_list_item(self, item_id: str, user_id: uuid.UUID):
+        item = await self.shopping_list_item_repository.get_by_id(uuid.UUID(item_id))
+        await self._check_delete_permissions(item, user_id)
+
+        await self.shopping_list_item_repository.delete(item)
+
+    async def _check_delete_permissions(
+        self, item: ShoppingListItem, user_id: uuid.UUID
+    ):
+        if item is None:
+            raise NotFoundException("Shopping list item not found")
+
+        shopping_list = await self.shopping_list_repository.get_by_id(
+            item.shopping_list_id
+        )
+        if shopping_list is None:
+            raise NotFoundException("Shopping list not found")
+
+        is_family_member = await self.family_service.is_member(
+            shopping_list.family_id, user_id
+        )
+
+        if not is_family_member:
+            raise ForbiddenException(
+                "User is not allowed to delete items of this shopping list"
+            )
+
 
 def get_shopping_list_item_service(
     shopping_list_repository: Annotated[
