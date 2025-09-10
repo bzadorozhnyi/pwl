@@ -82,4 +82,5 @@ ServerWebSocketEvent = (
     | DeleteFamilyTaskEvent
     | CreateShoppingListEvent
     | UpdateShoppingListEvent
+    | DeleteShoppingListEvent
 )
