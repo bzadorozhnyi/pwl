@@ -2,10 +2,14 @@ import uuid
 
 import pytest
 from fastapi import status
+from httpx_ws import aconnect_ws
 from sqlalchemy import select
 
 from models.shopping_list import ShoppingList
-from tests.test_shopping_list.schemas_utils import _assert_shopping_list_response_schema
+from tests.test_shopping_list.schemas_utils import (
+    _assert_shopping_list_response_schema,
+    _assert_websocket_shopping_list_update_response_schema,
+)
 
 
 @pytest.mark.anyio
@@ -203,3 +207,50 @@ async def test_cannot_update_shopping_list_family_id(
     )
 
     assert updated_shopping_list.family_id == family1.id  # should remain unchanged
+
+
+@pytest.mark.anyio
+async def test_websocket_shopping_list_update_success(
+    async_client,
+    db_session,
+    user_factory,
+    family_factory,
+    family_member_factory,
+    shopping_list_factory,
+    shopping_list_update_payload_factory,
+):
+    """Test WebSocket receives real-time update events on shopping lists."""
+    user = user_factory()
+    family = family_factory()
+    family_member_factory(family_id=family.id, user_id=user.id)
+    shopping_list = shopping_list_factory(family_id=family.id, creator_id=user.id)
+
+    payload = {"identifier": user.email, "password": "password"}
+    auth_response = await async_client.post("/api/auth/token/", json=payload)
+    assert auth_response.status_code == status.HTTP_200_OK
+    access_token = auth_response.json()["tokens"]["access_token"]
+
+    async with aconnect_ws(
+        "/api/ws/",
+        async_client,
+        headers={"Authorization": f"Bearer {access_token}"},
+    ) as ws:
+        update_payload = shopping_list_update_payload_factory(family_id=str(family.id))
+        await async_client.put(
+            f"/api/shopping-lists/{shopping_list.id}/",
+            headers={"authorization": f"Bearer {access_token}"},
+            json=update_payload,
+        )
+
+        updated_shopping_list = await db_session.scalar(
+            select(ShoppingList).where(ShoppingList.id == shopping_list.id)
+        )
+        response = await ws.receive_json()
+
+        assert updated_shopping_list is not None
+        assert response["family_id"] == str(family.id)
+        assert response["event_type"] == "user_updated_shopping_list"
+        assert response["data"]["id"] == str(updated_shopping_list.id)
+        assert response["data"]["name"] == update_payload["name"]
+
+        _assert_websocket_shopping_list_update_response_schema(response)

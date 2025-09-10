@@ -118,4 +118,4 @@ async def delete_shopping_list(
         ShoppingListService, Depends(get_shopping_list_service)
     ],
 ):
-    await shopping_list_service.delete_shopping_list(shopping_list_id, current_user.id)
+    await shopping_list_service.delete_shopping_list(shopping_list_id, current_user)
