@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from enums.ws import WebSocketServerEvent
 from schemas.family_task import FamilyTaskOut
+from schemas.shopping_list import ShoppingListOut
 
 
 class BaseServerWebSocketEvent(BaseModel):
@@ -49,9 +50,17 @@ class DeleteFamilyTaskEvent(BaseServerWebSocketEvent):
     data: DeleteFamilyTaskOut
 
 
+class CreateShoppingListEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_CREATED_SHOPPING_LIST] = (
+        WebSocketServerEvent.USER_CREATED_SHOPPING_LIST
+    )
+    data: ShoppingListOut
+
+
 ServerWebSocketEvent = (
     CreateFamilyTaskEvent
     | UpdateFamilyTaskEvent
     | UpdateDoneStatusFamilyTaskEvent
     | DeleteFamilyTaskEvent
+    | CreateShoppingListEvent
 )

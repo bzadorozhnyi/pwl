@@ -12,17 +12,22 @@ from repositories.shopping_list import (
 )
 from schemas.pagination import Paginated
 from schemas.shopping_list import CreateShoppingListIn, UpdateShoppingListIn
+from schemas.ws.server import CreateShoppingListEvent, ServerWebSocketEvent
 from services.family import FamilyService, get_family_service
+from services.group_message import GroupMessageService, get_group_message_service
 
 
 class ShoppingListService:
     def __init__(
         self,
+        *,
         shopping_list_repository: ShoppingListRepository,
         family_service: FamilyService,
+        group_message_service: GroupMessageService,
     ):
         self.shopping_list_repository = shopping_list_repository
         self.family_service = family_service
+        self.group_message_service = group_message_service
 
     async def create_shopping_list(
         self, list_data: CreateShoppingListIn, creator_id: uuid.UUID
@@ -31,7 +36,17 @@ class ShoppingListService:
 
         shopping_list = ShoppingList(**list_data.model_dump(), creator_id=creator_id)
 
-        return await self.shopping_list_repository.create(shopping_list)
+        shopping_list = await self.shopping_list_repository.create(shopping_list)
+
+        await self._send_task_event(
+            creator_id,
+            CreateShoppingListEvent(
+                family_id=shopping_list.family_id,
+                data=shopping_list,
+            ),
+        )
+
+        return shopping_list
 
     async def _check_create_permissions(
         self, list_data: CreateShoppingListIn, creator_id: str
@@ -105,11 +120,23 @@ class ShoppingListService:
         if not is_family_member:
             raise ForbiddenException("User is not member of family")
 
+    async def _send_task_event(self, user_id: uuid.UUID, event: ServerWebSocketEvent):
+        await self.group_message_service.send_to_family(
+            user_id, event.model_dump(mode="json")
+        )
+
 
 def get_shopping_list_service(
     shopping_list_repository: Annotated[
         ShoppingListRepository, Depends(get_shopping_list_repository)
     ],
     family_service: Annotated[FamilyService, Depends(get_family_service)],
+    group_message_service: Annotated[
+        GroupMessageService, Depends(get_group_message_service)
+    ],
 ) -> ShoppingListService:
-    return ShoppingListService(shopping_list_repository, family_service)
+    return ShoppingListService(
+        shopping_list_repository=shopping_list_repository,
+        family_service=family_service,
+        group_message_service=group_message_service,
+    )
