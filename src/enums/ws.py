@@ -8,3 +8,4 @@ class WebSocketServerEvent(StrEnum):
     USER_DELETED_TASK = "user_deleted_task"
 
     USER_CREATED_SHOPPING_LIST = "user_created_shopping_list"
+    USER_UPDATED_SHOPPING_LIST = "user_updated_shopping_list"

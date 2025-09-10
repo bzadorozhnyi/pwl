@@ -57,10 +57,18 @@ class CreateShoppingListEvent(BaseServerWebSocketEvent):
     data: ShoppingListOut
 
 
+class UpdateShoppingListEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_UPDATED_SHOPPING_LIST] = (
+        WebSocketServerEvent.USER_UPDATED_SHOPPING_LIST
+    )
+    data: ShoppingListOut
+
+
 ServerWebSocketEvent = (
     CreateFamilyTaskEvent
     | UpdateFamilyTaskEvent
     | UpdateDoneStatusFamilyTaskEvent
     | DeleteFamilyTaskEvent
     | CreateShoppingListEvent
+    | UpdateShoppingListEvent
 )

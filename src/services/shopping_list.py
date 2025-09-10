@@ -12,7 +12,11 @@ from repositories.shopping_list import (
 )
 from schemas.pagination import Paginated
 from schemas.shopping_list import CreateShoppingListIn, UpdateShoppingListIn
-from schemas.ws.server import CreateShoppingListEvent, ServerWebSocketEvent
+from schemas.ws.server import (
+    CreateShoppingListEvent,
+    ServerWebSocketEvent,
+    UpdateShoppingListEvent,
+)
 from services.family import FamilyService, get_family_service
 from services.group_message import GroupMessageService, get_group_message_service
 
@@ -86,7 +90,17 @@ class ShoppingListService:
         for key, value in update_data.items():
             setattr(shopping_list, key, value)
 
-        return await self.shopping_list_repository.update(shopping_list)
+        shopping_list = await self.shopping_list_repository.update(shopping_list)
+
+        await self._send_task_event(
+            user_id,
+            UpdateShoppingListEvent(
+                family_id=shopping_list.family_id,
+                data=shopping_list,
+            ),
+        )
+
+        return shopping_list
 
     async def _check_update_permissions(
         self, shopping_list: ShoppingList, user_id: str
