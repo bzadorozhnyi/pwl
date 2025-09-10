@@ -13,6 +13,15 @@ from sqlmodel import SQLModel
 import models
 from core.config import settings
 
+convention = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+SQLModel.metadata.naming_convention = convention
+
 
 # This function dynamically imports all SQLModel table classes from the specified package.
 # It ensures that every SQLModel with `table=True` in the package is registered in the global
