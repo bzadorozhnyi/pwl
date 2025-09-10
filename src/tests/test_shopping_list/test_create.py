@@ -4,7 +4,10 @@ from httpx_ws import aconnect_ws
 from sqlmodel import select
 
 from models.shopping_list import ShoppingList
-from tests.test_shopping_list.schemas_utils import _assert_shopping_list_response_schema
+from tests.test_shopping_list.schemas_utils import (
+    _assert_shopping_list_response_schema,
+    _assert_websocket_shopping_list_create_response_schema,
+)
 
 
 @pytest.mark.anyio
@@ -153,4 +156,4 @@ async def test_websocket_shopping_list_create_success(
         assert response["data"]["id"] == str(shopping_list.id)
         assert response["data"]["name"] == payload["name"]
 
-        _assert_shopping_list_response_schema(response["data"])
+        _assert_websocket_shopping_list_create_response_schema(response)

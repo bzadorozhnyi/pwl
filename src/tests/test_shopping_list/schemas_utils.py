@@ -35,6 +35,28 @@ shopping_list_list_response_schema = {
     "additionalProperties": False,
 }
 
+websocket_shopping_list_create_response_schema = {
+    "type": "object",
+    "properties": {
+        "family_id": {"type": "string", "format": "uuid"},
+        "event_type": {"const": "user_created_shopping_list"},
+        "data": shopping_list_response_schema,
+    },
+    "required": ["family_id", "event_type", "data"],
+    "additionalProperties": False,
+}
+
+websocket_shopping_list_update_response_schema = {
+    "type": "object",
+    "properties": {
+        "family_id": {"type": "string", "format": "uuid"},
+        "event_type": {"const": "user_updated_shopping_list"},
+        "data": shopping_list_response_schema,
+    },
+    "required": ["family_id", "event_type", "data"],
+    "additionalProperties": False,
+}
+
 websocket_shopping_list_delete_event_response_schema = {
     "type": "object",
     "properties": {
@@ -66,6 +88,26 @@ def _assert_shopping_list_list_response_schema(data):
     """Validate that the list response matches the expected schema."""
     try:
         jsonschema.validate(instance=data, schema=shopping_list_list_response_schema)
+    except jsonschema.exceptions.ValidationError as e:
+        pytest.fail(f"List response does not match schema: {e}")
+
+
+def _assert_websocket_shopping_list_create_response_schema(data):
+    """Validate that the list response matches the expected schema."""
+    try:
+        jsonschema.validate(
+            instance=data, schema=websocket_shopping_list_create_response_schema
+        )
+    except jsonschema.exceptions.ValidationError as e:
+        pytest.fail(f"List response does not match schema: {e}")
+
+
+def _assert_websocket_shopping_list_update_response_schema(data):
+    """Validate that the list response matches the expected schema."""
+    try:
+        jsonschema.validate(
+            instance=data, schema=websocket_shopping_list_update_response_schema
+        )
     except jsonschema.exceptions.ValidationError as e:
         pytest.fail(f"List response does not match schema: {e}")
 
