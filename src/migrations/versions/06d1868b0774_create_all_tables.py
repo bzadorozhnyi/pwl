@@ -1,8 +1,8 @@
 """create all tables
 
-Revision ID: 93fd9d19eee7
+Revision ID: 06d1868b0774
 Revises:
-Create Date: 2025-09-10 17:24:35.436695
+Create Date: 2025-09-10 17:39:09.298426
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "93fd9d19eee7"
+revision: str = "06d1868b0774"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -127,7 +127,6 @@ def upgrade() -> None:
             ["shopping_list_id"],
             ["shoppinglist.id"],
             name=op.f("fk_shoppinglistitem_shopping_list_id_shoppinglist"),
-            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_shoppinglistitem")),
     )
