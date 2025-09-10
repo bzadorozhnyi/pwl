@@ -20,7 +20,9 @@ from schemas.shopping_list_item import (
     ShoppingListItemFilter,
     UpdatePurchasedStatusShoppingListItemIn,
 )
+from schemas.ws.server import CreateShoppingListItemEvent, ServerWebSocketEvent
 from services.family import FamilyService, get_family_service
+from services.group_message import GroupMessageService, get_group_message_service
 
 
 class ShoppingListItemService:
@@ -30,10 +32,12 @@ class ShoppingListItemService:
         shopping_list_repository: ShoppingListRepository,
         shopping_list_item_repository: ShoppingListItemRepository,
         family_service: FamilyService,
+        group_message_service: GroupMessageService,
     ):
         self.shopping_list_repository = shopping_list_repository
         self.shopping_list_item_repository = shopping_list_item_repository
         self.family_service = family_service
+        self.group_message_service = group_message_service
 
     async def create_shopping_list_item(
         self, item_data: CreateShoppingListItemIn, user_id: uuid.UUID
@@ -41,7 +45,18 @@ class ShoppingListItemService:
         await self._check_create_permissions(item_data, user_id)
 
         item = ShoppingListItem(**item_data.model_dump(), creator_id=user_id)
-        return await self.shopping_list_item_repository.create(item)
+
+        item = await self.shopping_list_item_repository.create(item)
+
+        await self._send_task_event(
+            user_id,
+            CreateShoppingListItemEvent(
+                family_id=item.shopping_list.family_id,
+                data=item,
+            ),
+        )
+
+        return item
 
     async def _check_create_permissions(
         self, item_data: CreateShoppingListItemIn, user_id: uuid.UUID
@@ -155,6 +170,11 @@ class ShoppingListItemService:
                 "User is not allowed to delete items of this shopping list"
             )
 
+    async def _send_task_event(self, user_id: uuid.UUID, event: ServerWebSocketEvent):
+        await self.group_message_service.send_to_family(
+            user_id, event.model_dump(mode="json")
+        )
+
 
 def get_shopping_list_item_service(
     shopping_list_repository: Annotated[
@@ -164,9 +184,13 @@ def get_shopping_list_item_service(
         ShoppingListItemRepository, Depends(get_shopping_list_item_repository)
     ],
     family_service: Annotated[FamilyService, Depends(get_family_service)],
+    group_message_service: Annotated[
+        GroupMessageService, Depends(get_group_message_service)
+    ],
 ) -> ShoppingListItemService:
     return ShoppingListItemService(
         shopping_list_item_repository=shopping_list_item_repository,
         shopping_list_repository=shopping_list_repository,
         family_service=family_service,
+        group_message_service=group_message_service,
     )
