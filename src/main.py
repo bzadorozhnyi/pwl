@@ -3,7 +3,12 @@ from fastapi.concurrency import asynccontextmanager
 from sqladmin import Admin
 
 from admin.auth import get_admin_auth
+from admin.family import FamilyAdmin, FamilyMemberAdmin
+from admin.family_task import FamilyTaskAdmin
+from admin.shopping_list import ShoppingListAdmin
+from admin.shopping_list_item import ShoppingListItemAdmin
 from admin.user import UserAdmin
+from admin.verify_token import VerifyTokenAdmin
 from core.db import engine
 from core.middlewares.request_id import RequestIDMiddleware
 from routes import auth, family_task, shopping_list, shopping_list_item, user, ws
@@ -20,6 +25,12 @@ async def lifespan(app: FastAPI):
     )
 
     admin.add_view(UserAdmin)
+    admin.add_view(FamilyAdmin)
+    admin.add_view(FamilyMemberAdmin)
+    admin.add_view(FamilyTaskAdmin)
+    admin.add_view(ShoppingListAdmin)
+    admin.add_view(ShoppingListItemAdmin)
+    admin.add_view(VerifyTokenAdmin)
 
     yield
 
