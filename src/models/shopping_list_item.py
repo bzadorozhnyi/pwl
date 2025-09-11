@@ -6,7 +6,9 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class ShoppingListItem(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    shopping_list_id: uuid.UUID = Field(foreign_key="shoppinglist.id")
+    shopping_list_id: uuid.UUID = Field(
+        foreign_key="shoppinglist.id", ondelete="CASCADE"
+    )
     name: str = Field(nullable=False)
     purchased: bool = Field(default=False, nullable=False)
     creator_id: uuid.UUID = Field(foreign_key="user.id")
