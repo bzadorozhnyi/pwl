@@ -71,7 +71,8 @@ def createsuperuser():
     while True:
         email = input("Email: ")
         try:
-            AdminUserIn(email=email, password="dummy_password")
+            dummy_password = "A" * MIN_PASSWORD_LENGTH  # Dummy password for validation ONLY
+            AdminUserIn(email=email, password=dummy_password)
             break
         except Exception:
             typer.secho("Invalid email format, please try again.", fg=typer.colors.RED)
