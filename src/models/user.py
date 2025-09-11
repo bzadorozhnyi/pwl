@@ -14,4 +14,6 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now, nullable=False)
     updated_at: datetime = Field(default_factory=datetime.now, nullable=False)
 
+    is_admin: bool = Field(default=False, nullable=False)
+
     families: list["FamilyMember"] = Relationship(back_populates="user")  # noqa: F821

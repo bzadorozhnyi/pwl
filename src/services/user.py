@@ -8,7 +8,12 @@ from sqlmodel import select
 from core.db import get_session
 from core.jwt import AuthJWTService, get_auth_jwt_service
 from core.logging import logger
-from exceptions import AuthorizationException, InputException, NotFoundException
+from exceptions import (
+    AuthorizationException,
+    ForbiddenException,
+    InputException,
+    NotFoundException,
+)
 from models.family import Family, FamilyMember, FamilyRole
 from models.shopping_list import ShoppingList
 from models.user import User
@@ -18,7 +23,6 @@ from repositories.shopping_list import (
     get_shopping_list_repository,
 )
 from repositories.user import UserRepository, get_user_repository
-from schemas.token import TokenPairOut
 from schemas.user import (
     FamilyInfo,
     UserAuthCredentialsIn,
@@ -87,7 +91,7 @@ class UserService:
 
         return user, family
 
-    async def login(self, user_credentials: UserAuthCredentialsIn) -> TokenPairOut:
+    async def login(self, user_credentials: UserAuthCredentialsIn) -> UserWithTokensOut:
         logger.info("start user login")
         user = await self.authenticate_user(user_credentials)
         if not user:
@@ -97,9 +101,24 @@ class UserService:
 
         return UserWithTokensOut(user=UserOut.model_validate(user), tokens=tokens)
 
+    async def login_admin(
+        self, user_credentials: UserAuthCredentialsIn
+    ) -> UserWithTokensOut:
+        logger.info("start admin login")
+        user = await self.authenticate_user(user_credentials)
+        if not user:
+            raise AuthorizationException("Invalid identifier or password")
+
+        if user.is_admin is False:
+            raise ForbiddenException("User is not admin")
+
+        tokens = self.auth_jwt_service.create_token_pair({"sub": str(user.id)})
+
+        return UserWithTokensOut(user=UserOut.model_validate(user), tokens=tokens)
+
     async def authenticate_user(
         self, user_credentials: UserAuthCredentialsIn
-    ) -> UserOut | None:
+    ) -> User | None:
         user = await self.user_repository.get_by_identifier(user_credentials.identifier)
         if not user:
             logger.warning("user not found")
@@ -111,7 +130,7 @@ class UserService:
             logger.warning("invalid password")
             return None
 
-        return UserOut.model_validate(user)
+        return user
 
     async def get_user_from_token(self, token: str) -> User:
         credentials_exception = AuthorizationException(
