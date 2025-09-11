@@ -19,3 +19,12 @@ class ShoppingList(SQLModel, table=True):
             "lazy": "selectin",
         },
     )
+
+    family: "Family" = Relationship(  # noqa: F821
+        sa_relationship_kwargs={
+            "foreign_keys": "ShoppingList.family_id",
+        },
+    )
+
+    def __str__(self):
+        return f"ShoppingList ({self.id})"
