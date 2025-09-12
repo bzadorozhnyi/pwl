@@ -6,10 +6,10 @@ from httpx_ws import aconnect_ws
 from sqlmodel import select
 
 from models.shopping_list_item import ShoppingListItem
-from tests.utils import get_access_token
 from tests.test_shopping_list_item.schemas_utils import (
     _assert_websocket_shopping_list_item_delete_event_response_schema,
 )
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -110,10 +110,7 @@ async def test_websocket_shopping_list_item_delete_success(
     )
     shopping_list_item = shopping_list_item_factory(shopping_list_id=shopping_list.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     async with aconnect_ws(
         "/api/ws/",

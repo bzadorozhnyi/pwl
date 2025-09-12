@@ -162,10 +162,7 @@ async def test_websocket_shopping_list_item_create_success(
     family_member_factory(family_id=family.id, user_id=user.id)
     shopping_list = shopping_list_factory(family_id=family.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     async with aconnect_ws(
         "/api/ws/",
