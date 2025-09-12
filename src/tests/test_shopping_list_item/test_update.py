@@ -5,6 +5,7 @@ from fastapi import status
 from sqlmodel import select
 
 from models.shopping_list_item import ShoppingListItem
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -41,10 +42,7 @@ async def test_update_shopping_list_item_purchase_success(
         purchased=initial_purchased,
     )
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     update_data = {"purchased": update_purchased}
     response = await async_client.patch(
@@ -68,9 +66,7 @@ async def test_update_shopping_list_item_purchase_not_found(
 ):
     """Test updating non-existing shopping list item purchase returns 404."""
     user = user_factory()
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     update_data = {"purchased": True}
     response = await async_client.patch(
@@ -102,10 +98,7 @@ async def test_update_shopping_list_item_purchase_only_family_member_can_update(
 
     non_family_member = user_factory()
 
-    payload = {"identifier": non_family_member.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, non_family_member)
 
     update_data = {"purchased": True}
     response = await async_client.patch(

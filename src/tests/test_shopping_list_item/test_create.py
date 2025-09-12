@@ -8,6 +8,7 @@ from models.shopping_list_item import ShoppingListItem
 from tests.test_shopping_list_item.schemas_utils import (
     _assert_shopping_list_item_response_schema,
 )
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -30,12 +31,7 @@ async def test_create_shopping_list_item_success(
         shopping_list_id=str(shopping_list.id), name="Milk"
     )
 
-    auth_payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=auth_payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.post(
         "/api/shopping-list-items/",
@@ -75,12 +71,7 @@ async def test_cannot_create_shopping_list_item_by_non_member(
     family = family_factory()
     shopping_list = shopping_list_factory(family_id=family.id)
 
-    auth_payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=auth_payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     payload = shopping_list_item_create_payload_factory(
         shopping_list_id=str(shopping_list.id), name="Bread"
@@ -110,12 +101,7 @@ async def test_cannot_create_shopping_list_item_with_empty_name(
     family_member_factory(family_id=family.id, user_id=user.id)
     shopping_list = shopping_list_factory(family_id=family.id)
 
-    auth_payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=auth_payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     payload = shopping_list_item_create_payload_factory(
         shopping_list_id=str(shopping_list.id), name=""
@@ -143,12 +129,7 @@ async def test_cannot_create_shopping_list_item_with_nonexistent_shopping_list(
     family = family_factory()
     family_member_factory(family_id=family.id, user_id=user.id)
 
-    auth_payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=auth_payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     payload = shopping_list_item_create_payload_factory(
         shopping_list_id=str(uuid.uuid4()), name="Eggs"

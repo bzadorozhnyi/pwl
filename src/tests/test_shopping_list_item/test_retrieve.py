@@ -7,6 +7,7 @@ from fastapi import status
 from tests.test_shopping_list_item.schemas_utils import (
     _assert_shopping_list_item_list_response_schema,
 )
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -32,12 +33,7 @@ async def test_list_shopping_list_items_nonexistent_shopping_list_returns_404(
     family = family_factory()
     family_member_factory(family_id=family.id, user_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.get(
         f"/api/shopping-lists/{uuid.uuid4()}/items/",
@@ -66,12 +62,7 @@ async def test_list_shopping_list_items_success(
         3, shopping_list_id=shopping_list.id, creator_id=user.id
     )
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.get(
         f"/api/shopping-lists/{shopping_list.id}/items/",
@@ -119,12 +110,7 @@ async def test_cannot_list_items_from_other_family_shopping_list(
         2, shopping_list_id=shopping_list_other_family.id, creator_id=user2.id
     )
 
-    payload = {"identifier": user1.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user1)
 
     response = await async_client.get(
         f"/api/shopping-lists/{shopping_list_other_family.id}/items/",
@@ -153,10 +139,7 @@ async def test_paginated_list_shopping_list_items_multiple_pages(
         15, shopping_list_id=shopping_list.id, creator_id=user.id
     )
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     headers = {"authorization": f"Bearer {access_token}"}
 

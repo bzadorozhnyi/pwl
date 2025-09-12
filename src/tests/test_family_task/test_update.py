@@ -11,6 +11,7 @@ from tests.test_family_task.schemas_utils import (
     _assert_websocket_task_update_done_status_response_schema,
     _assert_websocket_task_update_response_schema,
 )
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -35,10 +36,7 @@ async def test_update_family_task_success(
         family_id=family.id, creator_id=user1.id, assignee_id=user1.id
     )
 
-    payload = {"identifier": user1.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user1)
 
     update_data = family_task_update_payload_factory(
         assignee_id=str(user2.id), done=True
@@ -66,10 +64,7 @@ async def test_cannot_update_nonexisting_task(
 ):
     """Test that user cannot update a non-existing task."""
     user = user_factory()
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     update_data = family_task_update_payload_factory()
     response = await async_client.put(
@@ -102,10 +97,7 @@ async def test_update_family_task_only_creator(
         family_id=family.id, creator_id=creator.id, assignee_id=alignee.id
     )
 
-    payload = {"identifier": alignee.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, alignee)
 
     update_data = family_task_update_payload_factory()
     response = await async_client.put(
@@ -137,10 +129,7 @@ async def test_cannot_update_with_invalid_assignee(
         family_id=family.id, creator_id=user1.id, assignee_id=user1.id
     )
 
-    payload = {"identifier": user1.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user1)
 
     update_data = family_task_update_payload_factory(
         assignee_id=str(user2.id), done=True
@@ -171,10 +160,7 @@ async def test_cannot_update_with_empty_title(
         family_id=family.id, creator_id=user.id, assignee_id=user.id
     )
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     update_data = family_task_update_payload_factory(title="")
     response = await async_client.put(
@@ -207,10 +193,7 @@ async def test_cannot_update_task_creator(
         family_id=family.id, creator_id=creator.id, assignee_id=creator.id
     )
 
-    payload = {"identifier": creator.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, creator)
 
     update_data = {"creator_id": str(not_creator.id)}
     response = await async_client.put(
@@ -267,10 +250,7 @@ async def test_update_task_done_success(
     )
 
     user = creator if role == "creator" else assignee
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     update_data = {"done": update_done}
     response = await async_client.patch(
@@ -295,9 +275,7 @@ async def test_update_task_done_not_found(
 ):
     """Test updating non-existing task returns 404."""
     user = user_factory()
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     update_data = {"done": True}
     response = await async_client.patch(
@@ -331,9 +309,7 @@ async def test_update_task_done_forbidden(
         family_id=family.id, creator_id=creator.id, assignee_id=assignee.id, done=False
     )
 
-    payload = {"identifier": other_user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, other_user)
 
     update_data = {"done": True}
     response = await async_client.patch(
@@ -376,9 +352,7 @@ async def test_update_task_done_forbidden_for_non_family_member(
     )
 
     user = creator if role == "creator" else assignee
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     update_data = {"done": True}
     response = await async_client.patch(
@@ -408,10 +382,7 @@ async def test_websocket_family_task_update_success(
         family_id=family.id, creator_id=user.id, assignee_id=user.id
     )
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     async with aconnect_ws(
         "/api/ws/",
@@ -458,10 +429,7 @@ async def test_websocket_update_task_done_success(
         family_id=family.id, creator_id=user.id, assignee_id=user.id, done=False
     )
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     async with aconnect_ws(
         "/api/ws/",

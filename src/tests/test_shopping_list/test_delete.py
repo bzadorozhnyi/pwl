@@ -10,6 +10,7 @@ from models.shopping_list_item import ShoppingListItem
 from tests.test_shopping_list.schemas_utils import (
     _assert_websocket_shopping_list_delete_event_response_schema,
 )
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -28,9 +29,7 @@ async def test_delete_shopping_list_by_creator_success(
 
     shopping_list = shopping_list_factory(family_id=family.id, creator_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.delete(
         f"/api/shopping-lists/{shopping_list.id}/",
@@ -49,9 +48,7 @@ async def test_delete_shopping_list_by_creator_success(
 async def test_delete_shopping_list_not_found(async_client, user_factory):
     """Test that deleting a non-existent shopping list returns 404."""
     user = user_factory()
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.delete(
         f"/api/shopping-lists/{uuid.uuid4()}/",
@@ -81,9 +78,7 @@ async def test_cannot_delete_shopping_list_by_non_family_member(
         family_id=family.id, creator_id=creator.id, assignee_id=non_family_member.id
     )
 
-    payload = {"identifier": non_family_member.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, non_family_member)
 
     response = await async_client.delete(
         f"/api/shopping-lists/{shopping_list.id}/",
@@ -115,10 +110,7 @@ async def test_websocket_shopping_list_delete_success(
         family_id=family.id, creator_id=user.id, assignee_id=user.id
     )
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     async with aconnect_ws(
         "/api/ws/",
@@ -162,9 +154,7 @@ async def test_delete_shopping_list_also_deletes_items(
     item1 = shopping_list_item_factory(shopping_list_id=shopping_list.id)
     item2 = shopping_list_item_factory(shopping_list_id=shopping_list.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.delete(
         f"/api/shopping-lists/{shopping_list.id}/",
