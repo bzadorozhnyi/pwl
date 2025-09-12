@@ -1,8 +1,8 @@
 """add is_admin field into User
 
-Revision ID: 7ceb8da741c5
-Revises: 06d1868b0774
-Create Date: 2025-09-11 11:24:19.827010
+Revision ID: 03e7b84a8a89
+Revises: ba5aee50a8a5
+Create Date: 2025-09-12 12:32:30.436381
 
 """
 
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "7ceb8da741c5"
-down_revision: Union[str, Sequence[str], None] = "06d1868b0774"
+revision: str = "03e7b84a8a89"
+down_revision: Union[str, Sequence[str], None] = "ba5aee50a8a5"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
