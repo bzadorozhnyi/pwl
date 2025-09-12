@@ -27,3 +27,6 @@ class FamilyTask(SQLModel, table=True):
             "lazy": "selectin",
         },
     )
+
+    def __str__(self):
+        return f"FamilyTask ({self.id})"
