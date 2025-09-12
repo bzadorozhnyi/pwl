@@ -23,7 +23,7 @@ router = APIRouter(prefix="/shopping-list-items", tags=["shopping-list-items"])
     response_model=ShoppingListItemOut,
     responses={
         403: {"description": "Forbidden: user is not a member of the family"},
-        404: {"description": "Shopping list not found"},
+        404: {"description": "Not Found: shopping list not found"},
     },
 )
 async def create_shopping_list_item(
@@ -43,7 +43,7 @@ async def create_shopping_list_item(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
         403: {"description": "Forbidden: user is not a member of the family"},
-        404: {"description": "Shopping list item not found"},
+        404: {"description": "Not Found: shopping list item not found"},
     },
 )
 async def update_shopping_list_item_purchase_status(
@@ -64,7 +64,7 @@ async def update_shopping_list_item_purchase_status(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
         403: {"description": "Forbidden: user is not a member of the family"},
-        404: {"description": "Shopping list item not found"},
+        404: {"description": "Not Found: shopping list item not found"},
     },
 )
 async def delete_shopping_list_item(
