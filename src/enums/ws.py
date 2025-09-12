@@ -10,3 +10,9 @@ class WebSocketServerEvent(StrEnum):
     USER_CREATED_SHOPPING_LIST = "user_created_shopping_list"
     USER_UPDATED_SHOPPING_LIST = "user_updated_shopping_list"
     USER_DELETED_SHOPPING_LIST = "user_deleted_shopping_list"
+
+    USER_CREATED_SHOPPING_LIST_ITEM = "user_created_shopping_list_item"
+    USER_UPDATED_SHOPPING_LIST_ITEM_PURCHASED_STATUS = (
+        "user_updated_shopping_list_item_purchased_status"
+    )
+    USER_DELETED_SHOPPING_LIST_ITEM = "user_deleted_shopping_list_item"

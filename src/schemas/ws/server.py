@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from enums.ws import WebSocketServerEvent
 from schemas.family_task import FamilyTaskOut
 from schemas.shopping_list import ShoppingListOut
+from schemas.shopping_list_item import ShoppingListItemOut
 
 
 class BaseServerWebSocketEvent(BaseModel):
@@ -75,6 +76,36 @@ class DeleteShoppingListEvent(BaseServerWebSocketEvent):
     data: DeleteShoppingListOut
 
 
+class CreateShoppingListItemEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_CREATED_SHOPPING_LIST_ITEM] = (
+        WebSocketServerEvent.USER_CREATED_SHOPPING_LIST_ITEM
+    )
+    data: ShoppingListItemOut
+
+
+class UpdatePurchasedStatusOut(BaseModel):
+    id: uuid.UUID
+    purchased: bool
+
+
+class UpdatePurchasedStatusShoppingListItemEvent(BaseServerWebSocketEvent):
+    event_type: Literal[
+        WebSocketServerEvent.USER_UPDATED_SHOPPING_LIST_ITEM_PURCHASED_STATUS
+    ] = WebSocketServerEvent.USER_UPDATED_SHOPPING_LIST_ITEM_PURCHASED_STATUS
+    data: UpdatePurchasedStatusOut
+
+
+class DeleteShoppingListItemOut(BaseModel):
+    id: uuid.UUID
+
+
+class DeleteShoppingListItemEvent(BaseServerWebSocketEvent):
+    event_type: Literal[WebSocketServerEvent.USER_DELETED_SHOPPING_LIST_ITEM] = (
+        WebSocketServerEvent.USER_DELETED_SHOPPING_LIST_ITEM
+    )
+    data: DeleteShoppingListItemOut
+
+
 ServerWebSocketEvent = (
     CreateFamilyTaskEvent
     | UpdateFamilyTaskEvent
@@ -83,4 +114,7 @@ ServerWebSocketEvent = (
     | CreateShoppingListEvent
     | UpdateShoppingListEvent
     | DeleteShoppingListEvent
+    | CreateShoppingListItemEvent
+    | UpdatePurchasedStatusShoppingListItemEvent
+    | DeleteShoppingListItemEvent
 )
