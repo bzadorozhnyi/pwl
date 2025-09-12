@@ -71,7 +71,9 @@ def createsuperuser():
     while True:
         email = input("Email: ")
         try:
-            dummy_password = "A" * MIN_PASSWORD_LENGTH  # Dummy password for validation ONLY
+            dummy_password = (
+                "A" * MIN_PASSWORD_LENGTH
+            )  # Dummy password for validation ONLY
             AdminUserIn(email=email, password=dummy_password)
             break
         except Exception:
