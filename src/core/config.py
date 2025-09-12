@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     VERIFY_TOKEN_EXPIRE_HOURS: int = 1
     UI_URL_PROTOCOL: str = "http://"
     BASE_UI_DOMAIN: str = "localhost:3000"
+    ADMIN_PANEL_SECRET_KEY: str = "admin_panel_secret"
 
     # Email settings
     MAIL_USERNAME: str = ""
