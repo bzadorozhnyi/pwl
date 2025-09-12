@@ -5,6 +5,7 @@ from fastapi import status
 from sqlmodel import select
 
 from models.shopping_list_item import ShoppingListItem
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -26,9 +27,7 @@ async def test_delete_shopping_list_item_by_family_member_success(
 
     shopping_list_item = shopping_list_item_factory(shopping_list_id=shopping_list.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.delete(
         f"/api/shopping-list-items/{shopping_list_item.id}/",
@@ -47,9 +46,7 @@ async def test_delete_shopping_list_item_by_family_member_success(
 async def test_delete_shopping_list_item_not_found(async_client, user_factory):
     """Test that deleting a non-existent shopping list item returns 404."""
     user = user_factory()
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.delete(
         f"/api/shopping-list-items/{uuid.uuid4()}/",
@@ -75,9 +72,7 @@ async def test_delete_shopping_list_item_by_non_family_member_forbidden(
 
     non_family_member = user_factory()
 
-    payload = {"identifier": non_family_member.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, non_family_member)
 
     response = await async_client.delete(
         f"/api/shopping-list-items/{shopping_list_item.id}/",

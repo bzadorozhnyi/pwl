@@ -18,7 +18,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
     status_code=status.HTTP_201_CREATED,
     response_model=UserWithTokensOut,
     responses={
-        400: {"description": "Email already registered"},
+        400: {"description": "Bad Request: email already registered"},
     },
 )
 async def register_user(
@@ -29,7 +29,7 @@ async def register_user(
 
 @router.post(
     "/token/",
-    responses={401: {"description": "Invalid identifier or password"}},
+    responses={401: {"description": "Unauthorized: invalid identifier or password"}},
     response_model=UserWithTokensOut,
 )
 async def login(
@@ -41,7 +41,7 @@ async def login(
 
 @router.post(
     "/token/refresh/",
-    responses={401: {"description": "Invalid refresh token"}},
+    responses={401: {"description": "Unauthorized: invalid refresh token"}},
     response_model=TokenAccessOut,
 )
 async def refresh_token(
@@ -68,8 +68,8 @@ async def forgot_password(
     "/reset-password/",
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
-        404: {"description": "The link is not found"},
-        410: {"description": "Password reset link has expired"},
+        404: {"description": "Not Found: password reset link is not found"},
+        410: {"description": "Gone: password reset link has expired"},
     },
 )
 async def reset_password(

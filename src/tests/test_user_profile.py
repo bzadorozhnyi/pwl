@@ -2,6 +2,8 @@ import jsonschema
 import pytest
 from fastapi import status
 
+from tests.utils import get_access_token
+
 user_profile_schema = {
     "type": "object",
     "properties": {
@@ -37,13 +39,7 @@ async def test_retrieve_user_profile_success(
     family = family_factory()
     family_member_factory(family_id=family.id, user_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.get(
         "/api/users/profile/",
@@ -85,13 +81,7 @@ async def test_cannot_retrieve_user_profile_with_no_family(async_client, user_fa
     """Test that cannot retrieve user profile if user is not in a family."""
     user = user_factory(password="password")
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.get(
         "/api/users/profile/",

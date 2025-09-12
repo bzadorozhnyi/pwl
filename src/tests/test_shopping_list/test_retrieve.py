@@ -6,6 +6,7 @@ from fastapi import status
 from tests.test_shopping_list.schemas_utils import (
     _assert_shopping_list_list_response_schema,
 )
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -37,12 +38,7 @@ async def test_list_shopping_lists_success(
         3, family_id=family.id, creator_id=user.id
     )
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.get(
         f"/api/shopping-lists/{family.id}/",
@@ -79,12 +75,7 @@ async def test_cannot_list_other_family_shopping_lists(
     family_member_factory(family_id=family1.id, user_id=user1.id)
     family_member_factory(family_id=family2.id, user_id=user2.id)
 
-    payload = {"identifier": user1.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user1)
 
     response = await async_client.get(
         f"/api/shopping-lists/{family2.id}/",
@@ -109,10 +100,7 @@ async def test_paginated_list_shopping_lists_multiple_pages(
 
     shopping_list_factory.create_batch(15, family_id=family.id, creator_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     headers = {"authorization": f"Bearer {access_token}"}
 

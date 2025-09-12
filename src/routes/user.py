@@ -15,8 +15,8 @@ router = APIRouter(prefix="/users", tags=["user"])
     "/profile/",
     response_model=UserProfileOut,
     responses={
-        401: {"description": "Unauthorized"},
-        404: {"description": "User profile not found"},
+        401: {"description": "Unauthorized: authentication required"},
+        404: {"description": "Not Found: user profile not found"},
     },
 )
 async def get_user_profile(

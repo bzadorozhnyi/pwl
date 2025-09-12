@@ -7,6 +7,7 @@ from fastapi import status
 from tests.test_shopping_list_item.schemas_utils import (
     _assert_shopping_list_item_list_response_schema,
 )
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -64,9 +65,7 @@ async def test_filter_items(
             created_at=item["created_at"],
         )
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     params = filter_params.copy()
     response = await async_client.get(
@@ -115,9 +114,7 @@ async def test_filter_items_by_date_and_pagination(
     created_from = items[2]["created_at"].isoformat()
     created_to = items[16]["created_at"].isoformat()
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     params = {
         "created_from": created_from,
@@ -188,9 +185,7 @@ async def test_filter_items_name_word_limit(
     family_member_factory(family_id=family.id, user_id=user.id)
     shopping_list = shopping_list_factory(family_id=family.id, creator_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     response = await async_client.get(
         f"/api/shopping-lists/{shopping_list.id}/items/?{urlencode(filter_params)}",

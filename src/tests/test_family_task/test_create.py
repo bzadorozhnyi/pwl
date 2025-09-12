@@ -8,6 +8,7 @@ from tests.test_family_task.schemas_utils import (
     _assert_family_task_response_schema,
     _assert_websocket_task_create_response_schema,
 )
+from tests.utils import get_access_token
 
 
 @pytest.mark.anyio
@@ -24,13 +25,7 @@ async def test_create_family_task_success_assign_yourself(
     family = family_factory()
     family_member = family_member_factory(family_id=family.id, user_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     payload = family_task_create_payload_factory(
         family_id=str(family.id), assignee_id=str(family_member.user_id)
@@ -70,13 +65,7 @@ async def test_create_family_task_success(
     family_member_factory(family_id=family.id, user_id=user.id)
     family_member_factory(family_id=family.id, user_id=other_user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     payload = family_task_create_payload_factory(
         family_id=str(family.id), assignee_id=str(other_user.id)
@@ -108,13 +97,7 @@ async def test_cannot_create_family_task_by_non_member(
     user = user_factory()
     family = family_factory()
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     payload = family_task_create_payload_factory(
         family_id=str(family.id), assignee_id=str(user.id)
@@ -142,13 +125,7 @@ async def test_cannot_create_family_task_for_non_member(
     family = family_factory()
     family_member_factory(family_id=family.id, user_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     payload = family_task_create_payload_factory(
         family_id=str(family.id), assignee_id=str(user_not_from_family.id)
@@ -174,13 +151,7 @@ async def test_cannot_create_family_task_with_empty_title(
     family = family_factory()
     family_member_factory(family_id=family.id, user_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    response = await async_client.post("/api/auth/token/", json=payload)
-
-    assert response.status_code == status.HTTP_200_OK
-
-    access_token = response.json().get("tokens", {}).get("access_token")
-    assert access_token is not None
+    access_token = await get_access_token(async_client, user)
 
     payload = family_task_create_payload_factory(
         family_id=str(family.id), assignee_id=str(user.id), title=""
@@ -208,10 +179,7 @@ async def test_websocket_family_task_create_success(
     family = family_factory()
     family_member_factory(family_id=family.id, user_id=user.id)
 
-    payload = {"identifier": user.email, "password": "password"}
-    auth_response = await async_client.post("/api/auth/token/", json=payload)
-    assert auth_response.status_code == status.HTTP_200_OK
-    access_token = auth_response.json()["tokens"]["access_token"]
+    access_token = await get_access_token(async_client, user)
 
     async with aconnect_ws(
         "/api/ws/",

@@ -64,7 +64,7 @@ async def list_shopping_lists(
     responses={
         400: {"description": "Bad Request: invalid filter parameters"},
         403: {"description": "Forbidden: user is not a member of the family"},
-        404: {"description": "Shopping list not found"},
+        404: {"description": "Not Found: shopping list not found"},
     },
 )
 async def get_all_shopping_list_items(
