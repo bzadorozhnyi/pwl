@@ -50,5 +50,4 @@ class FamilyMemberAdmin(ModelView, model=FamilyMember):
         FamilyMember.user_id,
         FamilyMember.role,
     ]
-    column_searchable_list = [FamilyMember.family_id, 
-    FamilyMember.user_id]
+    column_searchable_list = [FamilyMember.family_id, FamilyMember.user_id]
