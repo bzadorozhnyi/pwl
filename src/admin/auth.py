@@ -1,6 +1,7 @@
 from fastapi import Request
 from sqladmin.authentication import AuthenticationBackend
 
+from core.config import settings
 from core.db import AsyncSessionProxy, async_session
 from core.jwt import get_auth_jwt_service
 from repositories.family import get_family_repository
@@ -66,4 +67,6 @@ async def get_admin_auth() -> AdminAuth:
             auth_jwt_service=auth_jwt_service,
         )
 
-        return AdminAuth(user_service=user_service, secret_key="your-secret-key")
+        return AdminAuth(
+            user_service=user_service, secret_key=settings.ADMIN_PANEL_SECRET_KEY
+        )
