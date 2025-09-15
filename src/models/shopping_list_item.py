@@ -22,3 +22,10 @@ class ShoppingListItem(SQLModel, table=True):
             "lazy": "selectin",
         },
     )
+
+    shopping_list: "ShoppingList" = Relationship(  # noqa: F821
+        sa_relationship_kwargs={
+            "foreign_keys": "ShoppingListItem.shopping_list_id",
+            "lazy": "selectin",
+        },
+    )
