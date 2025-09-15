@@ -15,6 +15,9 @@ class Family(SQLModel, table=True):
     members: list["FamilyMember"] = Relationship(back_populates="family")
     tasks: list["FamilyTask"] = Relationship(back_populates="family")  # noqa: F821
 
+    def __str__(self):
+        return f"Family ({self.id})"
+
 
 class FamilyMember(SQLModel, table=True):
     family_id: uuid.UUID = Field(foreign_key="family.id", primary_key=True)
@@ -23,3 +26,6 @@ class FamilyMember(SQLModel, table=True):
 
     family: Family = Relationship(back_populates="members")
     user: "User" = Relationship(back_populates="families")  # noqa: F821
+
+    def __str__(self):
+        return f"Family Member (family: {self.family_id}, user: {self.user_id})"

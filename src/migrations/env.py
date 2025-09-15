@@ -1,8 +1,5 @@
 import asyncio
-import importlib
-import inspect
 import os
-import pkgutil
 from logging.config import fileConfig
 
 from alembic import context
@@ -12,6 +9,7 @@ from sqlmodel import SQLModel
 
 import models
 from core.config import settings
+from helpers.sqlmodel import import_models_from_package
 
 convention = {
     "ix": "ix_%(column_0_label)s",
@@ -23,24 +21,9 @@ convention = {
 SQLModel.metadata.naming_convention = convention
 
 
-# This function dynamically imports all SQLModel table classes from the specified package.
-# It ensures that every SQLModel with `table=True` in the package is registered in the global
-# namespace, so that Alembic's `target_metadata` can automatically detect all tables
+# Call the function on the models package to automatically import all SQLModel tables,
+# so that Alembic's `target_metadata` can detect all tables
 # for migration generation without manually importing each model.
-def import_models_from_package(package):
-    for loader, module_name, is_pkg in pkgutil.walk_packages(
-        package.__path__, package.__name__ + "."
-    ):
-        module = importlib.import_module(module_name)
-        for name, obj in inspect.getmembers(module, inspect.isclass):
-            if (
-                issubclass(obj, SQLModel)
-                and getattr(obj, "__table__", None) is not None
-            ):
-                globals()[name] = obj
-
-
-# Call the function on the models package to automatically import all SQLModel tables.
 import_models_from_package(models)
 
 # this is the Alembic Config object, which provides
