@@ -17,7 +17,9 @@ class Recipe(BaseModel):
 
 
 class InvalidRequest(BaseModel):
-    error_message: str = Field(description="Error message indicating why the request is invalid")
+    error_message: str = Field(
+        description="Error message indicating why the request is invalid"
+    )
 
 
 RecipeResponse = Recipe | InvalidRequest

@@ -17,5 +17,3 @@ async def get_ingredients_for_recipe(
     recipe_service: Annotated[RecipeService, Depends(get_recipe_service)],
 ):
     return await recipe_service.get_ingredients_for_recipe(body.request)
-
-
