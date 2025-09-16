@@ -1,16 +1,16 @@
-from xml.dom import ValidationErr
+import os
 
-from dotenv import load_dotenv
 from pydantic_ai import Agent, ModelRetry, PromptedOutput
 
 from core.config import settings
-from exceptions import BadGatewayException, InputException, InternalException
+from exceptions import BadGatewayException, InternalException
 from schemas.recipe import RecipeResponse
 
 
 class RecipeService:
     def __init__(self):
-        load_dotenv()
+        os.environ["OPENAI_API_KEY"] = settings.AGENT_API_KEY
+
         self.agent = Agent(
             model=settings.AGENT_MODEL,
             instructions=(
@@ -44,8 +44,6 @@ class RecipeService:
             result = await self.agent.run(request)
 
             return result.output
-        except ValidationErr:
-            raise InputException("Validation failed")
         except ModelRetry:
             raise BadGatewayException("LLM retry error")
         except Exception as exc:
