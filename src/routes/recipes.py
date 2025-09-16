@@ -10,7 +10,16 @@ from services.recipe import RecipeService, get_recipe_service
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 
 
-@router.post("/", response_model=RecipeResponse)
+@router.post(
+    "/",
+    response_model=RecipeResponse,
+    responses={
+        500: {
+            "description": "Internal Server Error: Unexpected error during recipe generation."
+        },
+        502: {"description": "Bad Gateway: LLM retry error"},
+    },
+)
 async def get_ingredients_for_recipe(
     body: RecipeRequestIn,
     current_user: Annotated[User, Depends(get_current_user)],
