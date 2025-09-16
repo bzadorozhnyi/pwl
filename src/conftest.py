@@ -1,6 +1,7 @@
 import asyncio
 import os
 import pkgutil
+from unittest.mock import AsyncMock
 
 import pytest
 from alembic import command
@@ -16,6 +17,7 @@ from core.db import AsyncSessionProxy, get_session
 from helpers.db import create_db, drop_db, is_db_exist
 from main import app
 from services.email import InMemoryEmailService, get_email_service
+from services.recipe import RecipeService, get_recipe_service
 
 
 @pytest.fixture(scope="session")
@@ -67,13 +69,46 @@ def email_service() -> InMemoryEmailService:
 
 
 @pytest.fixture(scope="function")
-async def async_client(db_session, email_service):
+def override_recipe_service():
+    recipe_service = RecipeService()
+
+    async def fake_run(request: str):
+        if "pasta" in request.lower():
+            return AsyncMock(
+                output={
+                    "title": "Pasta",
+                    "ingredients": [{"name": "Tomato", "quantity": "200 g"}],
+                    "note": None,
+                }
+            )
+        elif "salad" in request.lower():
+            return AsyncMock(
+                output={
+                    "title": "Salad",
+                    "ingredients": [{"name": "Cucumber", "quantity": "100 g"}],
+                    "note": None,
+                }
+            )
+        else:
+            return AsyncMock(output={"error_message": "Invalid request"})
+
+    mock_agent = AsyncMock()
+    mock_agent.run.side_effect = fake_run
+    recipe_service.agent = mock_agent
+
+    return recipe_service
+
+
+@pytest.fixture(scope="function")
+async def async_client(db_session, email_service, override_recipe_service):
     async def override_get_session():
         yield AsyncSessionProxy(db_session)
 
     app.dependency_overrides[get_session] = override_get_session
 
     app.dependency_overrides[get_email_service] = lambda: email_service
+
+    app.dependency_overrides[get_recipe_service] = lambda: override_recipe_service
 
     async with AsyncClient(
         transport=ASGIWebSocketTransport(app=app),
