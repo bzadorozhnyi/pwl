@@ -3,6 +3,7 @@ import os
 from pydantic_ai import Agent, ModelRetry, PromptedOutput
 
 from core.config import settings
+from core.logging import logger
 from exceptions import BadGatewayException, InternalException
 from schemas.recipe import RecipeResponse
 
@@ -47,8 +48,9 @@ class RecipeService:
         except ModelRetry:
             raise BadGatewayException("LLM retry error")
         except Exception as exc:
+            logger.error(f"Unexpected error during recipe generation: {exc}")
             raise InternalException(
-                detail=f"Unexpected error during recipe generation: {exc}"
+                detail="Unexpected error during recipe generation."
             )
 
 
