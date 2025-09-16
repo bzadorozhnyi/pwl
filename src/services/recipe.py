@@ -49,9 +49,7 @@ class RecipeService:
             raise BadGatewayException("LLM retry error")
         except Exception as exc:
             logger.error(f"Unexpected error during recipe generation: {exc}")
-            raise InternalException(
-                detail="Unexpected error during recipe generation."
-            )
+            raise InternalException(detail="Unexpected error during recipe generation.")
 
 
 def get_recipe_service() -> RecipeService:
