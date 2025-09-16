@@ -10,7 +10,7 @@ from services.recipe import RecipeService, get_recipe_service
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 
 
-@router.get("/", response_model=RecipeResponse)
+@router.post("/", response_model=RecipeResponse)
 async def get_ingredients_for_recipe(
     body: RecipeRequestIn,
     current_user: Annotated[User, Depends(get_current_user)],
