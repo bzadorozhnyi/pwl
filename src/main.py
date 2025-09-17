@@ -11,7 +11,15 @@ from admin.user import UserAdmin
 from admin.verify_token import VerifyTokenAdmin
 from core.db import engine
 from core.middlewares.request_id import RequestIDMiddleware
-from routes import auth, family_task, shopping_list, shopping_list_item, user, ws
+from routes import (
+    auth,
+    family_task,
+    recipes,
+    shopping_list,
+    shopping_list_item,
+    user,
+    ws,
+)
 
 
 @asynccontextmanager
@@ -43,6 +51,7 @@ app.include_router(user.router, prefix="/api")
 app.include_router(family_task.router, prefix="/api")
 app.include_router(shopping_list.router, prefix="/api")
 app.include_router(shopping_list_item.router, prefix="/api")
+app.include_router(recipes.router, prefix="/api")
 app.include_router(ws.router, prefix="/api")
 
 app.add_middleware(RequestIDMiddleware)

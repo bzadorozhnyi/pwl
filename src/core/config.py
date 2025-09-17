@@ -1,3 +1,4 @@
+from pydantic_ai.models import KnownModelName as AgentKnownModelName
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from enums.mail_backend import MailBackend
@@ -17,6 +18,8 @@ class Settings(BaseSettings):
     UI_URL_PROTOCOL: str = "http://"
     BASE_UI_DOMAIN: str = "localhost:3000"
     ADMIN_PANEL_SECRET_KEY: str = "admin_panel_secret"
+    AGENT_MODEL: AgentKnownModelName = "openai:gpt-4.1-mini"
+    AGENT_API_KEY: str = "agent_api_key"
 
     # Email settings
     MAIL_USERNAME: str = ""
