@@ -8,6 +8,7 @@ from dependencies.pagination import get_paginator
 from models.user import User
 from schemas.pagination import Paginated
 from schemas.shopping_list import (
+    CreateShoppingListFromIngredientsIn,
     CreateShoppingListIn,
     ShoppingListOut,
     UpdateShoppingListIn,
@@ -36,6 +37,24 @@ async def create_shopping_list(
     ],
 ):
     return await shopping_list_service.create_shopping_list(body, current_user.id)
+
+
+@router.post(
+    "/from-ingredients/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ShoppingListOut,
+    responses={403: {"description": "Forbidden: user is not a member of the family"}},
+)
+async def create_shopping_list_from_ingredients(
+    body: CreateShoppingListFromIngredientsIn,
+    current_user: Annotated[User, Depends(get_current_user)],
+    shopping_list_service: Annotated[
+        ShoppingListService, Depends(get_shopping_list_service)
+    ],
+):
+    return await shopping_list_service.create_shopping_list_from_ingredients(
+        body, current_user.id
+    )
 
 
 @router.get(

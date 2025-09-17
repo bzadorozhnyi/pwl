@@ -2,12 +2,11 @@ from pydantic import BaseModel, Field
 
 
 class RecipeRequestIn(BaseModel):
-    request: str
+    recipe_request: str
 
 
 class Ingredient(BaseModel):
-    name: str = Field(description="Name of the ingredient")
-    quantity: str = Field(description="Quantity of the ingredient")
+    name: str = Field(description="Name of the ingredient with quantity")
 
 
 class Recipe(BaseModel):

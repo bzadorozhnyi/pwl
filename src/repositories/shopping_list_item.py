@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import and_, select
+from sqlmodel import and_, insert, select
 
 from core.db import get_session
 from core.pagination import Paginator
@@ -23,6 +23,12 @@ class ShoppingListItemRepository:
         await self.session.refresh(shopping_list_item)
 
         return shopping_list_item
+
+    async def create_batch(self, items: list[ShoppingListItem]):
+        values = [item.model_dump(exclude_unset=True) for item in items]
+        statement = insert(ShoppingListItem).values(values)
+        await self.session.execute(statement)
+        await self.session.commit()
 
     async def get_all_by_shopping_list_id(
         self,
