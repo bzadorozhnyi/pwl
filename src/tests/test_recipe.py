@@ -120,8 +120,6 @@ async def test_recipe_merge_with_shopping_list_service_param(
         headers={"authorization": f"Bearer {access_token}"},
     )
 
-    print("Response DOT", response.json())
-
     assert response.status_code == status.HTTP_200_OK
     response = response.json()
 
