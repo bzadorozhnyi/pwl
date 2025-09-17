@@ -21,7 +21,7 @@ async def test_recipe_service_param(
 
     response = await async_client.post(
         "/api/recipes/",
-        json={"request": user_input},
+        json={"recipe_request": user_input},
         headers={"authorization": f"Bearer {access_token}"},
     )
 

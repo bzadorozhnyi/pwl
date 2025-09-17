@@ -43,9 +43,9 @@ class RecipeService:
             ),
         )
 
-    async def get_ingredients_for_recipe(self, request: str) -> RecipeResponse:
+    async def get_ingredients_for_recipe(self, recipe_request: str) -> RecipeResponse:
         try:
-            result = await self.agent.run(request)
+            result = await self.agent.run(recipe_request)
 
             return result.output
         except ModelRetry:
