@@ -1,6 +1,6 @@
 import os
 
-from pydantic_ai import Agent, ModelRetry, PromptedOutput
+from pydantic_ai import Agent, ModelRetry, ModelSettings, PromptedOutput
 
 from core.config import settings
 from core.logging import logger
@@ -29,6 +29,9 @@ class RecipeService:
                 "   - Do not include the allergen in the recipe.\n"
                 "   - Add a note reminding the user to carefully review the ingredient list for allergens.\n"
                 "6. If the query is unrelated to recipes (extraction or generation), do not try to invent a recipe; fail."
+            ),
+            model_settings=ModelSettings(
+                temperature=0.0,
             ),
             output_type=PromptedOutput(
                 [RecipeResponse],
