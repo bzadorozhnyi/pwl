@@ -30,7 +30,7 @@ class ShoppingListItemRepository:
         await self.session.execute(statement)
         await self.session.commit()
 
-    async def get_all_by_shopping_list_id(
+    async def get_all_by_shopping_list_id_paginated(
         self,
         shopping_list_id: str,
         filters: ShoppingListItemFilter,
@@ -43,6 +43,18 @@ class ShoppingListItemRepository:
         statement = self._apply_shopping_list_item_filters(statement, filters)
 
         return await paginator.paginate(statement)
+
+    async def get_all_by_shopping_list_id(
+        self,
+        shopping_list_id: str,
+    ) -> list[ShoppingListItem]:
+        statement = select(ShoppingListItem).where(
+            ShoppingListItem.shopping_list_id == shopping_list_id
+        )
+
+        result = await self.session.execute(statement)
+
+        return result.scalars().all()
 
     def _apply_shopping_list_item_filters(self, statement, filters):
         if filters.name:

@@ -16,6 +16,9 @@ from core.consts import ALEMBIC_CFG_PATH
 from core.db import AsyncSessionProxy, get_session
 from helpers.db import create_db, drop_db, is_db_exist
 from main import app
+from repositories.family import get_family_repository
+from repositories.shopping_list import get_shopping_list_repository
+from repositories.shopping_list_item import get_shopping_list_item_repository
 from services.email import InMemoryEmailService, get_email_service
 from services.recipe import RecipeService, get_recipe_service
 
@@ -69,8 +72,12 @@ def email_service() -> InMemoryEmailService:
 
 
 @pytest.fixture(scope="function")
-def override_recipe_service():
-    recipe_service = RecipeService()
+def override_recipe_service(db_session):
+    recipe_service = RecipeService(
+        family_repository=get_family_repository(db_session),
+        shopping_list_repository=get_shopping_list_repository(db_session),
+        shopping_list_item_repository=get_shopping_list_item_repository(db_session),
+    )
 
     async def fake_run(request: str):
         if "pasta" in request.lower():
@@ -94,7 +101,70 @@ def override_recipe_service():
 
     mock_agent = AsyncMock()
     mock_agent.run.side_effect = fake_run
-    recipe_service.agent = mock_agent
+    recipe_service.recipe_gen_agent = mock_agent
+
+    async def fake_merge_run(request: str, deps=None, **kwargs):
+        if "cake" in request.lower():
+            return AsyncMock(
+                output={
+                    "updated_items": [
+                        {
+                            "id": "4f311d46-dadf-4d07-80f6-013a4afebfcd",
+                            "name": "Eggs – 10 pcs.",
+                        }
+                    ],
+                    "new_items": [
+                        {"name": "Cocoa powder – 100 g"},
+                    ],
+                }
+            )
+        else:
+            return AsyncMock(output={"error_message": "Invalid request"})
+
+    mock_merge_agent = AsyncMock()
+    mock_merge_agent.run.side_effect = fake_merge_run
+    recipe_service.recipe_merge_agent = mock_merge_agent
+
+    return recipe_service
+
+
+@pytest.fixture(scope="function")
+def override_recipe_merge_service(db_session):
+    recipe_service = RecipeService(
+        family_repository=get_family_repository(db_session),
+        shopping_list_repository=get_shopping_list_repository(db_session),
+        shopping_list_item_repository=get_shopping_list_item_repository(db_session),
+    )
+
+    async def fake_run(request: str):
+        if "cake" in request.lower():
+            return AsyncMock(
+                output={
+                    "updated_items": [
+                        {
+                            "id": "4f311d46-dadf-4d07-80f6-013a4afebfcd",
+                            "name": "Eggs – 10 pcs.",
+                        }
+                    ],
+                    "new_items": [
+                        {"name": "Cocoa powder – 100 g"},
+                        {"name": "Sugar – 400 g"},
+                        {"name": "Butter – 300 g"},
+                        {"name": "Vanilla sugar – 20 g"},
+                        {"name": "Milk – 500 ml"},
+                        {"name": "Corn starch – 80 g"},
+                        {"name": "Sour cream – 400 g"},
+                        {"name": "Baking powder – 20 g"},
+                        {"name": "Flour – 800 g"},
+                    ],
+                }
+            )
+        else:
+            return AsyncMock(output={"error_message": "Invalid request"})
+
+    mock_agent = AsyncMock()
+    mock_agent.run.side_effect = fake_run
+    recipe_service.recipe_merge_agent = mock_agent
 
     return recipe_service
 

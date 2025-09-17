@@ -29,8 +29,6 @@ async def test_create_from_ingredients_success(
 
     payload = ingredients_list_create_payload_factory(family_id=str(family.id))
 
-    print("Payload:", payload, "x")
-
     response = await async_client.post(
         "/api/shopping-lists/from-ingredients/",
         headers={"authorization": f"Bearer {access_token}"},

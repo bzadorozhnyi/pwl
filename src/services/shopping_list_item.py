@@ -94,7 +94,7 @@ class ShoppingListItemService:
             shopping_list_id, user_id, filters
         )
 
-        return await self.shopping_list_item_repository.get_all_by_shopping_list_id(
+        return await self.shopping_list_item_repository.get_all_by_shopping_list_id_paginated(
             shopping_list_id, filters, paginator
         )
 
