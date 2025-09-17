@@ -1,3 +1,4 @@
+import logfire
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from sqladmin import Admin
@@ -24,6 +25,9 @@ from routes import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logfire.configure()
+    logfire.instrument_pydantic_ai()
+
     admin_auth = await get_admin_auth()
     admin = Admin(
         app,
